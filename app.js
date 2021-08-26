@@ -1,20 +1,25 @@
-const hostname = 'localhost';
-const port = 3000;
-
+require('dotenv').config()
 const app = require('express')();
 const httpServer = require('http').createServer(app);
+
+const { 
+	SERVER_URL,
+	CLIENT_URL,
+	SERVER_PORT,
+} = process.env;
+
 const options = { 
 	cors: {
-		origin: `http://${hostname}:5500`,
+		origin: `http://${CLIENT_URL}`,
 		methods: ['GET', 'POST']
 	  }
  };
 const io = require('socket.io')(httpServer, options);
 
-io.on('connect', socket => { 
+io.on('connect', socket => {
 	console.log('connection established');
  });
 
-httpServer.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+httpServer.listen(SERVER_PORT, () => {
+  console.log(`Server running at http://${SERVER_URL}/`);
 });
