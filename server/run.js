@@ -10,7 +10,7 @@ const {
 
 const options = { 
 	cors: {
-		origin: `http://${CLIENT_URL}`,
+		origin: CLIENT_URL,
 		methods: ['GET', 'POST']
 	  }
  };
@@ -21,5 +21,5 @@ io.on('connect', socket => {
  });
 
 httpServer.listen(SERVER_PORT, () => {
-  console.log(`Server running at http://${SERVER_URL}/`);
+  console.log(`Server running at ${SERVER_URL}`);
 });
