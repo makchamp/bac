@@ -1,23 +1,20 @@
-import logo from './logo.svg';
 import './App.css';
-
 import io from 'socket.io-client'
+import React, { useEffect } from 'react';
+import CreateRoom from './components/CreateRoom';
 
-const socket = io(process.env.REACT_APP_SERVER || 'http://localhost:4000');
+let socket;
+const SERVER = process.env.REACT_APP_SERVER || 'http://localhost:4000';
 
 function App() {
+  useEffect(() => {
+    socket = io(SERVER);
+    socket.on();
+  });
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-        </a>
-      </header>
+      <CreateRoom />
     </div>
   );
 }
