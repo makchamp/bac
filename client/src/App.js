@@ -1,21 +1,15 @@
 import './App.css';
-import io from 'socket.io-client'
-import React, { useEffect } from 'react';
-import CreateRoom from './components/CreateRoom';
-
-let socket;
-const SERVER = process.env.REACT_APP_SERVER || 'http://localhost:4000';
+import React from 'react';
+import { socket, SocketContext } from './services/socket';
+import ConnectRoom from './components/ConnectRoom';
 
 function App() {
-  useEffect(() => {
-    socket = io(SERVER);
-    socket.on();
-  });
-
   return (
-    <div className="App">
-      <CreateRoom />
-    </div>
+    <SocketContext.Provider value={socket}>
+      <div className="App">
+        <ConnectRoom />
+      </div>
+    </SocketContext.Provider>
   );
 }
 

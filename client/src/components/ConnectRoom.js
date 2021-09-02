@@ -6,16 +6,31 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import { styled } from '@material-ui/core/styles';
 import logo from '../logo.svg';
+import { useContext, useState } from 'react'
+import { SocketContext } from '../services/socket';
+import { connectRoom } from '../services/roomService';
 
-function CreateRoom() {
-  const RoomInputField = styled(Input)(() => ({
-    height: 80,
-    margin: 35,
-    padding: 25,
-    fontSize: 24,
-    border: "2px solid #61dbfb",
-    color: "#FFFF",
-  }));
+const RoomInputField = styled(Input)(() => ({
+  height: 80,
+  margin: 35,
+  padding: 25,
+  fontSize: 24,
+  border: "2px solid #61dbfb",
+  color: "#FFFF",
+}));
+
+const ConnectRoom = () => {
+  const socket = useContext(SocketContext);
+  const [userName, setUserName] = useState('');
+  const [roomName, setRoomName] = useState('');
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    connectRoom(socket, {userName, roomName});
+    setUserName('');
+    setRoomName('');
+  }
 
   return (
     <Container component="main">
@@ -37,17 +52,24 @@ function CreateRoom() {
         <Typography component="h1" variant="h4">
           Enter Or Create a Room
         </Typography>
-        <Box component="form">
+        <Box component="form" onSubmit={handleSubmit}>
           <RoomInputField
             name="userName"
             id="userNameID"
             placeholder="Name"
+            value={userName}
+            onChange={(e)=>{
+              setUserName(e.target.value);
+            }}
           />
           <RoomInputField
             name="roomName"
             id="roomID"
             placeholder="Room"
-            autoFocus
+            value={roomName}
+            onChange={(e)=>{
+              setRoomName(e.target.value);
+            }}
           />
           <Box>
             <Button
@@ -69,4 +91,4 @@ function CreateRoom() {
   );
 }
 
-export default CreateRoom;
+export default ConnectRoom;
