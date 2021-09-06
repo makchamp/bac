@@ -9,6 +9,8 @@ import logo from '../logo.svg';
 import { useContext, useState } from 'react'
 import { SocketContext } from '../services/socket';
 import { connectRoom } from '../services/roomService';
+import { Route, useHistory } from "react-router-dom";
+import Lobby from './Lobby';
 
 const RoomInputField = styled(Input)(() => ({
   height: 80,
@@ -23,11 +25,13 @@ const ConnectRoom = () => {
   const socket = useContext(SocketContext);
   const [userName, setUserName] = useState('');
   const [roomName, setRoomName] = useState('');
+  const history = useHistory();
 
-  function handleSubmit(e) {
+  function HandleSubmit(e) {
     e.preventDefault();
 
-    connectRoom(socket, {userName, roomName});
+    connectRoom(socket, { userName, roomName });
+    history.push(`/room/${roomName}`);
     setUserName('');
     setRoomName('');
   }
@@ -35,58 +39,63 @@ const ConnectRoom = () => {
   return (
     <Container component="main">
       <CssBaseline />
-      <Box
-        sx={{
-          marginTop: 8,
-          border: '5px solid #61dbfb',
-          borderRadius: '10px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: "center",
-        }}
-      >
-        <Box component="img" alt="logo" src={logo} className="App-logo">
-        </Box>
-        <Typography component="h1" variant="h4">
-          Enter Or Create a Room
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit}>
-          <RoomInputField
-            name="userName"
-            id="userNameID"
-            placeholder="Name"
-            value={userName}
-            onChange={(e)=>{
-              setUserName(e.target.value);
-            }}
-          />
-          <RoomInputField
-            name="roomName"
-            id="roomID"
-            placeholder="Room"
-            value={roomName}
-            onChange={(e)=>{
-              setRoomName(e.target.value);
-            }}
-          />
-          <Box>
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              sx={{
-                m: 8,
-                width: "150px",
-                fontSize: "24px",
+      <Route path={`/room/${roomName}`} component={Lobby} />
+      <Route exact path='/' render={(props) => (
+        <Box
+          sx={{
+            marginTop: 8,
+            border: '5px solid #61dbfb',
+            borderRadius: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: "center",
+          }}
+        >
+          <Box component="img" alt="logo" src={logo} className="App-logo">
+          </Box>
+          <Typography component="h1" variant="h4">
+            Enter Or Create a Room
+          </Typography>
+          <Box component="form" onSubmit={HandleSubmit}>
+            <RoomInputField
+              name="userName"
+              id="userNameID"
+              placeholder="Name"
+              required
+              value={userName}
+              onChange={(e) => {
+                setUserName(e.target.value);
               }}
-            >
-              Go!
-            </Button>
+            />
+            <RoomInputField
+              name="roomName"
+              id="roomID"
+              placeholder="Room"
+              required
+              value={roomName}
+              onChange={(e) => {
+                setRoomName(e.target.value);
+              }}
+            />
+            <Box>
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                sx={{
+                  m: 8,
+                  width: "150px",
+                  fontSize: "24px",
+                }}
+              >
+                Go!
+              </Button>
+            </Box>
           </Box>
         </Box>
-      </Box>
+      )} />
     </Container>
   );
 }

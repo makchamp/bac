@@ -17,7 +17,7 @@ const options = {
 };
 const io = require('socket.io')(httpServer, options);
 
-io.on('connection', socket => {
+io.on('connection', (socket) => {
   setUpHandlers(io, socket);
 });
 
