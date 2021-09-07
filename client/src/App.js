@@ -3,16 +3,18 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { socket, SocketContext } from './services/socket';
 import ConnectRoom from './components/ConnectRoom';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme';
 
 function App() {
   return (
-    <BrowserRouter>
-      <SocketContext.Provider value={socket}>
-        <div className="App">
+    <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <SocketContext.Provider value={socket}>
           <ConnectRoom />
-        </div>
-      </SocketContext.Provider>
-    </BrowserRouter>
+        </SocketContext.Provider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
