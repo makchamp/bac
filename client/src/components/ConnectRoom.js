@@ -1,10 +1,10 @@
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Input from '@material-ui/core/Input';
-import Box from '@material-ui/core/Box';
-import Typography from '@material-ui/core/Typography';
-import Container from '@material-ui/core/Container';
-import { styled } from '@material-ui/core/styles';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import Input from '@mui/material/Input';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import { styled } from '@mui/material/styles';
 import logo from '../logo.svg';
 import { useContext, useState } from 'react'
 import { SocketContext } from '../services/socket';
