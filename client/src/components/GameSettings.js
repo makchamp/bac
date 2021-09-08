@@ -6,6 +6,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Categories from './Categories';
+import Letters from './Letters';
 
 const GameSettings = () => {
   return (
@@ -21,14 +22,24 @@ const GameSettings = () => {
       <Accordion defaultExpanded={true} >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
         >
-          <Typography sx={{ width: '50%', flexShrink: 0 }}>Categories</Typography>
-          <Typography sx={{ color: 'text.secondary' }}>Select or Add Categories</Typography>
+          <Typography sx={{ width: '45%', flexShrink: 0 }}>Categories</Typography>
+          <Typography sx={{ color: 'text.secondary', }}>Select or Add Categories</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Categories></Categories>
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion defaultExpanded={true} >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}  
+        >
+          <Typography sx={{ width: '45%', flexShrink: 0 }}>Letters</Typography>
+          <Typography sx={{ color: 'text.secondary' }}>Configures Letters To Play</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Letters></Letters>
         </AccordionDetails>
       </Accordion>
     </Box>
