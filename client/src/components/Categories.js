@@ -63,7 +63,7 @@ function CategoryList({ items, toggleItemActive }) {
 }
 
 class Categories extends PureComponent {
-  state = { 
+  state = {
     toggleAll: true,
   };
 
@@ -103,16 +103,17 @@ class Categories extends PureComponent {
           <Typography sx={{ color: 'text.secondary' }}>Add Your Own Categories to the List!</Typography>
           <Autocomplete
             multiple
+            value={this.props.customCategories}
+            onChange={(event, newValue) => {
+              this.props.setCustomCategories(newValue);
+            }}
             options={[]}
-            defaultValue={[]}
             freeSolo
             renderTags={(value, getTagProps) => {
-              this.props.setCustomCategories(value);
               return value.map((option, index) => (
                 <Chip variant="outlined" label={option} {...getTagProps({ index })} />
               ))
-            }
-            }
+            }}
             renderInput={(params) => (
               <TextField
                 {...params}

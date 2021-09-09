@@ -10,40 +10,59 @@ import Categories from './Categories';
 import Letters from './Letters';
 import SliderInput from './SliderInput';
 import { useState } from 'react';
-import { generateLetters } from './Letters';
-import { generateCategories } from './Categories';
 
 const panels = {
   general: "generalPanel",
   categories: "categoriesPanel",
   letters: "lettersPanel"
 }
-const GameSettings = () => {
+const GameSettings = ({
+  gameSettings,
+  setGameSettings,
+  categories,
+  setCategories,
+}) => {
   const [panelExpanded, setPanelExpanded] = useState(false);
   const handlePanelExpansion = (panel) => (event, isExpanded) => {
     setPanelExpanded(isExpanded ? panel : false);
   }
 
   // General Settings
-  const [numOfRounds, setNumOfRounds] = useState(3);
-  const [lengthOfRound, setLengthOfRound] = useState(120);
-  const [scoringSystem, setScoringSystem] = useState(true);
+  const setNumOfRounds = (numOfRounds) => {
+    setGameSettings({...gameSettings, numOfRounds});
+  }
+  const setLengthOfRound = (lengthOfRound) => {
+    setGameSettings({...gameSettings, lengthOfRound});
+  }
+  const onScoringToggle = (event) => {
+    const checked = event.target.checked;
+    setGameSettings({...gameSettings, multiScoring: checked});
+  }
   
   // Category Settings
-  const [numOfCategories, setNumOfCategories] = useState(12);
-  const [categories, setCategories] = useState(generateCategories(true));
-  let customCategories;
-  const setCustomCategories = (categories) => {
-    customCategories = categories;
+  const setNumOfCategories = (numOfCategories) => {
+    setGameSettings({...gameSettings, numOfCategories});
+  }
+
+  const setDefaultCategories = (defaultCategories) => {
+    setCategories({...categories, defaultCategories});
+  }
+  const setCustomCategories = (customCategories) => {
+    setCategories({...categories, customCategories});
   }
 
   // Letter Settings
-  const [letters, setLetters] = useState(generateLetters);
-  const [letterRotation, setLetterRotation] = useState(false);
-
+  const setLetters = (letters) => {
+    setGameSettings({...gameSettings, letters});
+  }
+  
+  const setLetterRotation = (checked) => {
+    setGameSettings({...gameSettings, letterRotation: checked});
+  }
+  
   const roundParams = {
     title: 'Number of Rounds',
-    value: numOfRounds,
+    value: gameSettings.numOfRounds,
     minValue: 1,
     maxValue: 10,
     defaultValue: 3,
@@ -53,7 +72,7 @@ const GameSettings = () => {
 
   const timeParams = {
     title: 'Round Duration (s)',
-    value: lengthOfRound,
+    value: gameSettings.lengthOfRound,
     minValue: 30,
     maxValue: 300,
     defaultValue: 120,
@@ -63,7 +82,7 @@ const GameSettings = () => {
 
   const numCategoryParams = {
     title: 'Number of Categories To Play',
-    value: numOfCategories,
+    value: gameSettings.numOfCategories,
     minValue: 6,
     maxValue: 18,
     defaultValue: 12,
@@ -72,20 +91,17 @@ const GameSettings = () => {
   };
 
   const letterParams = {
-    letters,
+    letters: gameSettings.letters,
     setLetters,
-    letterRotation,
+    letterRotation: gameSettings.letterRotation,
     setLetterRotation,
   }
 
   const categoryParams = {
-    categories,
-    setCategories,
+    categories: categories.defaultCategories,
+    setCategories: setDefaultCategories,
+    customCategories: categories.customCategories,
     setCustomCategories,
-  }
-
-  const onScoringToggle = (event) => {
-    setScoringSystem(event.target.checked);
   }
 
   return (
@@ -121,7 +137,7 @@ const GameSettings = () => {
             </Typography>
             <Stack direction="row" spacing={5} alignItems="center">
               <Typography>Single Point Per Answer</Typography>
-              <Switch checked={scoringSystem} onChange={onScoringToggle} />
+              <Switch checked={gameSettings.multiScoring} onChange={onScoringToggle} />
               <Typography>Multiple Points Per Answer</Typography>
             </Stack>
           </Box>

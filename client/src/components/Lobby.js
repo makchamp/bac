@@ -6,22 +6,69 @@ import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
 import { userSetChanged } from '../services/roomService';
 import GameSettings from './GameSettings';
+import { generateLetters } from './Letters';
+import { generateCategories } from './Categories';
+import { putObject, fetchObject, keys } from '../services/cache';
 
 const Lobby = () => {
   const socket = useContext(SocketContext);
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState('');
+  const [gameSettings, setSettings] = useState({
+    numOfRounds: 3,
+    lengthOfRound: 120,
+    multiScoring: true,
+    numOfCategories: 12,
+    letters: generateLetters(),
+    letterRotation: false,
+  });
+  const [categories, setStateCategories] = useState({
+    defaultCategories: generateCategories(true),
+    customCategories: [],
+  })
+  const setGameSettings = (settings) => {
+    setSettings(settings);
+    putObject(keys.gameSettings, settings);
+  }
+  const setCategories = (categories) => {
+    setStateCategories(categories);
+    putObject(keys.categories, categories);
+  }
+
   useEffect(() => {
-    socket.on(userSetChanged, (payload) => {
-      setUsers(payload.users);
-      setRoom(payload.room)
-    });
+    const setUserChangeSocket = () => {
+      socket.on(userSetChanged, (payload) => {
+        setUsers(payload.users);
+        setRoom(payload.room);
+      });
+    }
+    
+    const loadCache = () => {
+      const settings = fetchObject(keys.gameSettings);
+      if (settings){
+        setGameSettings({...settings});
+      }
+      const ctgs = fetchObject(keys.categories);
+      if (ctgs) {
+        setStateCategories({...ctgs});
+      }
+    }
+    loadCache();
+    setUserChangeSocket();
   }, [socket]);
+
+  const gameSettingsParams = {
+    gameSettings,
+    setGameSettings,
+    categories,
+    setCategories
+  }
+
   return (
     <Grid container component="main" sx={{ height: '100vh' }} >
       <Grid item xs={12} sm={12} md={8}
         sx={{ maxHeight: '100vh', overflow: 'auto' }}>
-        <GameSettings></GameSettings>
+        <GameSettings {...gameSettingsParams}></GameSettings>
       </Grid>
       <Grid item xs={12} sm={12} md={4} component={Paper}
         sx={{ maxHeight: '100vh', overflow: 'auto' }}>
