@@ -4,10 +4,12 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Switch from '@mui/material/Switch';
+import Stack from '@mui/material/Stack';
 import Categories from './Categories';
-import { useState } from 'react';
 import Letters from './Letters';
 import SliderInput from './SliderInput';
+import { useState } from 'react';
 
 const panels = {
   general: "generalPanel",
@@ -21,8 +23,9 @@ const GameSettings = () => {
   }
 
   const [numOfRounds, setNumOfRounds] = useState(3);
-  const [numOfCategories, setNumOfCategories] = useState(12);
   const [lengthOfRound, setLengthOfRound] = useState(120);
+  const [numOfCategories, setNumOfCategories] = useState(12);
+  const [scoringSystem, setScoringSystem] = useState(true)
 
   const roundParams = {
     title: 'Number of Rounds',
@@ -54,6 +57,9 @@ const GameSettings = () => {
     setValue: setNumOfCategories
   };
 
+  const onScoringToggle = (event) => {
+    setScoringSystem(event.target.checked);
+  }
 
   return (
     <Box
@@ -79,6 +85,20 @@ const GameSettings = () => {
         <AccordionDetails>
           <SliderInput {...roundParams}></SliderInput>
           <SliderInput {...timeParams}></SliderInput>
+
+          <Box sx={{ mt: 2 }}>
+            <Typography >Scoring</Typography>
+            <Typography sx={{ color: 'text.secondary' }}>
+            Determines if a positive ratio of upvotes to downvotes on an answer counts as one single point
+            or whether the total positive balance of votes is worth its sum in points
+            </Typography>
+            <Stack direction="row" spacing={5} alignItems="center">
+              <Typography>Single Point Per Answer</Typography>
+              <Switch checked={scoringSystem} onChange={onScoringToggle} />
+              <Typography>Multiple Points Per Answer</Typography>
+            </Stack>
+          </Box>
+
         </AccordionDetails>
       </Accordion>
 
