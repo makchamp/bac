@@ -10,6 +10,8 @@ import Categories from './Categories';
 import Letters from './Letters';
 import SliderInput from './SliderInput';
 import { useState } from 'react';
+import { generateLetters } from './Letters';
+import { generateCategories } from './Categories';
 
 const panels = {
   general: "generalPanel",
@@ -22,10 +24,22 @@ const GameSettings = () => {
     setPanelExpanded(isExpanded ? panel : false);
   }
 
+  // General Settings
   const [numOfRounds, setNumOfRounds] = useState(3);
   const [lengthOfRound, setLengthOfRound] = useState(120);
+  const [scoringSystem, setScoringSystem] = useState(true);
+  
+  // Category Settings
   const [numOfCategories, setNumOfCategories] = useState(12);
-  const [scoringSystem, setScoringSystem] = useState(true)
+  const [categories, setCategories] = useState(generateCategories(true));
+  let customCategories;
+  const setCustomCategories = (categories) => {
+    customCategories = categories;
+  }
+
+  // Letter Settings
+  const [letters, setLetters] = useState(generateLetters);
+  const [letterRotation, setLetterRotation] = useState(false);
 
   const roundParams = {
     title: 'Number of Rounds',
@@ -47,7 +61,7 @@ const GameSettings = () => {
     setValue: setLengthOfRound
   };
 
-  const categoryParams = {
+  const numCategoryParams = {
     title: 'Number of Categories To Play',
     value: numOfCategories,
     minValue: 6,
@@ -56,6 +70,19 @@ const GameSettings = () => {
     stepValue: 1,
     setValue: setNumOfCategories
   };
+
+  const letterParams = {
+    letters,
+    setLetters,
+    letterRotation,
+    setLetterRotation,
+  }
+
+  const categoryParams = {
+    categories,
+    setCategories,
+    setCustomCategories,
+  }
 
   const onScoringToggle = (event) => {
     setScoringSystem(event.target.checked);
@@ -114,9 +141,9 @@ const GameSettings = () => {
           <Typography sx={{ color: 'text.secondary', }}>Select or Add Categories</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Categories></Categories>
+          <Categories {...categoryParams}></Categories>
           <SliderInput
-            {...categoryParams}
+            {...numCategoryParams}
           ></SliderInput>
         </AccordionDetails>
       </Accordion>
@@ -132,7 +159,7 @@ const GameSettings = () => {
           <Typography sx={{ color: 'text.secondary' }}>Configures Letters To Play</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Letters></Letters>
+          <Letters {...letterParams}></Letters>
         </AccordionDetails>
       </Accordion>
     </Box>

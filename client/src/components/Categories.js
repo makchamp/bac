@@ -14,7 +14,7 @@ import memoize from 'memoize-one';
 import { FixedSizeList as List, areEqual } from 'react-window';
 import { categories } from '../data/categories';
 
-const generateItems = (isActive) => {
+export const generateCategories = (isActive) => {
   return categories.map((category) =>
   ({
     label: category,
@@ -63,29 +63,25 @@ function CategoryList({ items, toggleItemActive }) {
 }
 
 class Categories extends PureComponent {
-  state = {
-    items: generateItems(true),
-    checked: true,
+  state = { 
+    toggleAll: true,
   };
 
   toggleAllItems = () => {
+    this.props.setCategories(generateCategories(!this.state.toggleAll));
     this.setState({
-      items: generateItems(!this.state.checked),
-      checked: !this.state.checked,
-
+      toggleAll: !this.state.toggleAll,
     });
   }
 
   toggleItemActive = (index) => {
-    this.setState(prevState => {
-      const item = prevState.items[index];
-      const items = prevState.items.concat();
-      items[index] = {
-        ...item,
-        isActive: !item.isActive,
-      };
-      return { items };
-    });
+    const item = this.props.categories[index];
+    const items = this.props.categories.concat();
+    items[index] = {
+      ...item,
+      isActive: !item.isActive,
+    };
+    this.props.setCategories(items);
   }
 
   render() {
@@ -98,7 +94,7 @@ class Categories extends PureComponent {
           label="Toggle All"
         />
         <CategoryList
-          items={this.state.items}
+          items={this.props.categories}
           toggleItemActive={this.toggleItemActive}
         />
 
@@ -111,6 +107,7 @@ class Categories extends PureComponent {
             defaultValue={[]}
             freeSolo
             renderTags={(value, getTagProps) => {
+              this.props.setCustomCategories(value);
               return value.map((option, index) => (
                 <Chip variant="outlined" label={option} {...getTagProps({ index })} />
               ))

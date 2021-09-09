@@ -4,9 +4,8 @@ import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react'
 
-const generateLetters = () => {
+export const generateLetters = () => {
   const lestCommon5 = ['x', 'z', 'y', 'q', 'k'];
   const alphabet = {};
   for (let i = 97; i <= 122; i++) {
@@ -18,10 +17,12 @@ const generateLetters = () => {
   return alphabet;
 }
 
-const Letters = () => {
-  const [letters, setLetters] = useState(generateLetters);
-  // Letter Rotation determines whether to play with a single or multiple letters per round
-  const [letterRotation, setLetterRotation] = useState(false)
+const Letters = ({
+  letters,
+  setLetters,
+  letterRotation,
+  setLetterRotation
+}) => {
 
   const onLetterToggle = (letter) => {
     letters[letter].isActive = !letters[letter].isActive;
