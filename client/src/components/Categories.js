@@ -9,11 +9,7 @@ import Chip from '@mui/material/Chip';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Slider from '@mui/material/Slider';
-import MuiInput from '@mui/material/Input';
-import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/material/styles';
 import memoize from 'memoize-one';
 import { FixedSizeList as List, areEqual } from 'react-window';
 import { categories } from '../data/categories';
@@ -26,10 +22,6 @@ const generateItems = (isActive) => {
   })
   );
 }
-
-const Input = styled(MuiInput)`
-  width: 42px;
-`;
 
 const Row = memo(({ data, index, style }) => {
   const { items, toggleItemActive } = data;
@@ -70,21 +62,11 @@ function CategoryList({ items, toggleItemActive }) {
   );
 }
 
-const maxCategoriesToPlay = 18;
-const minCategoriesToPlay = 6;
-const defaultCategoriesToPlay = 12;
 class Categories extends PureComponent {
   state = {
     items: generateItems(true),
     checked: true,
-    numCategoriesToPlay: defaultCategoriesToPlay
   };
-
-  setNumCategoriesToPlay = (value) => {
-    this.setState({
-      numCategoriesToPlay: value,
-    });
-  }
 
   toggleAllItems = () => {
     this.setState({
@@ -105,24 +87,6 @@ class Categories extends PureComponent {
       return { items };
     });
   }
-
-  handleSliderChange = (event, newValue) => {
-    this.setNumCategoriesToPlay(newValue);
-  };
-
-  handleInputChange = (event) => {
-    this.setNumCategoriesToPlay(event.target.value === '' ? '' : Number(event.target.value));
-  };
-
-  handleBlur = () => {
-    if (!this.state.numCategoriesToPlay) {
-      this.setNumCategoriesToPlay(defaultCategoriesToPlay);
-    } else if (this.state.numCategoriesToPlay < minCategoriesToPlay) {
-      this.setNumCategoriesToPlay(minCategoriesToPlay);
-    } else if (this.state.numCategoriesToPlay > maxCategoriesToPlay) {
-      this.setNumCategoriesToPlay(maxCategoriesToPlay);
-    }
-  };
 
   render() {
     return (
@@ -162,47 +126,7 @@ class Categories extends PureComponent {
             sx={{ p: 1 }}
           />
         </Box>
-
-        <Box sx={{ mt: 2 }}>
-          <Typography >Number of Categories To Play</Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            Min: {minCategoriesToPlay}, Max: {maxCategoriesToPlay}</Typography>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item>
-            </Grid>
-            <Grid item>
-              <Input
-                value={typeof this.state.numCategoriesToPlay === 'number'
-                  ? this.state.numCategoriesToPlay : defaultCategoriesToPlay}
-                onChange={this.handleInputChange}
-                onBlur={this.handleBlur}
-                inputProps={{
-                  step: 1,
-                  min: minCategoriesToPlay,
-                  max: maxCategoriesToPlay,
-                  type: 'number',
-                  'aria-labelledby': 'input-slider',
-                }}
-              />
-            </Grid>
-            <Grid item xs>
-              <Slider
-                aria-label="Small steps"
-                value={typeof this.state.numCategoriesToPlay === 'number'
-                  ? this.state.numCategoriesToPlay : defaultCategoriesToPlay}
-                onChange={this.handleSliderChange}
-                defaultValue={defaultCategoriesToPlay}
-                step={1}
-                marks
-                min={minCategoriesToPlay}
-                max={maxCategoriesToPlay}
-                valueLabelDisplay="auto"
-              />
-            </Grid>
-          </Grid>
-        </Box>
       </Box>
-
     );
   }
 }

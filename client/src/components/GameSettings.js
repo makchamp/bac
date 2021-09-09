@@ -1,4 +1,3 @@
-import * as React from 'react';
 import Box from '@mui/material/Box';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -8,17 +7,53 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Categories from './Categories';
 import { useState } from 'react';
 import Letters from './Letters';
+import SliderInput from './SliderInput';
 
+const panels = {
+  general: "generalPanel",
+  categories: "categoriesPanel",
+  letters: "lettersPanel"
+}
 const GameSettings = () => {
-  const panels = {
-    categories: "categoriesPanel",
-    letters: "lettersPanel"
-  }
   const [panelExpanded, setPanelExpanded] = useState(false);
-
   const handlePanelExpansion = (panel) => (event, isExpanded) => {
     setPanelExpanded(isExpanded ? panel : false);
   }
+
+  const [numOfRounds, setNumOfRounds] = useState(3);
+  const [numOfCategories, setNumOfCategories] = useState(12);
+  const [lengthOfRound, setLengthOfRound] = useState(120);
+
+  const roundParams = {
+    title: 'Number of Rounds',
+    value: numOfRounds,
+    minValue: 1,
+    maxValue: 10,
+    defaultValue: 3,
+    stepValue: 1,
+    setValue: setNumOfRounds
+  };
+
+  const timeParams = {
+    title: 'Round Duration (s)',
+    value: lengthOfRound,
+    minValue: 30,
+    maxValue: 300,
+    defaultValue: 120,
+    stepValue: 10,
+    setValue: setLengthOfRound
+  };
+
+  const categoryParams = {
+    title: 'Number of Categories To Play',
+    value: numOfCategories,
+    minValue: 6,
+    maxValue: 18,
+    defaultValue: 12,
+    stepValue: 1,
+    setValue: setNumOfCategories
+  };
+
 
   return (
     <Box
@@ -30,6 +65,24 @@ const GameSettings = () => {
       <Typography variant="h3" sx={{ m: 1 }}>
         Game Settings
       </Typography>
+
+      <Accordion
+        expanded={panelExpanded === panels.general}
+        onChange={handlePanelExpansion(panels.general)}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+        >
+          <Typography sx={{ width: '45%', flexShrink: 0 }}>General</Typography>
+          <Typography sx={{ color: 'text.secondary' }}>Configure Rounds and Scoring</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <SliderInput {...roundParams}></SliderInput>
+          <SliderInput {...timeParams}></SliderInput>
+        </AccordionDetails>
+      </Accordion>
+
+
       <Accordion
         expanded={panelExpanded === panels.categories}
         onChange={handlePanelExpansion(panels.categories)}
@@ -42,6 +95,9 @@ const GameSettings = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Categories></Categories>
+          <SliderInput
+            {...categoryParams}
+          ></SliderInput>
         </AccordionDetails>
       </Accordion>
 
