@@ -21,6 +21,7 @@ const Lobby = () => {
     numOfCategories: 12,
     letters: generateLetters(),
     letterRotation: false,
+    toggleAllCategories: true,
   }
   const [gameSettings, setSettings] = useState(defaultGameSettings);
 

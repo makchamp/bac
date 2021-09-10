@@ -59,6 +59,10 @@ const GameSettings = ({
     setCategories({ ...categories, customCategories });
   }
 
+  const onAllCategoriesToggle = (checked) => {
+    setGameSettings({ ...gameSettings, toggleAllCategories: checked });
+  }
+
   // Letter Settings
   const setLetters = (letters) => {
     setGameSettings({ ...gameSettings, letters });
@@ -110,6 +114,8 @@ const GameSettings = ({
     setCategories: setDefaultCategories,
     customCategories: categories.customCategories,
     setCustomCategories,
+    toggleAll: gameSettings.toggleAllCategories,
+    onAllCategoriesToggle,
   }
 
   const handleClickOpen = () => {

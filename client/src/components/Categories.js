@@ -63,15 +63,9 @@ function CategoryList({ items, toggleItemActive }) {
 }
 
 class Categories extends PureComponent {
-  state = {
-    toggleAll: true,
-  };
-
   toggleAllItems = () => {
-    this.props.setCategories(generateCategories(!this.state.toggleAll));
-    this.setState({
-      toggleAll: !this.state.toggleAll,
-    });
+    this.props.setCategories(generateCategories(!this.props.toggleAll));
+    this.props.onAllCategoriesToggle(!this.props.toggleAll);
   }
 
   toggleItemActive = (index) => {
@@ -89,7 +83,10 @@ class Categories extends PureComponent {
       <Box>
         <FormControlLabel
           control={
-            <Checkbox defaultChecked onClick={this.toggleAllItems} />
+            <Checkbox
+            checked={this.props.toggleAll}
+            onClick={this.toggleAllItems}
+          />
           }
           label="Toggle All"
         />
