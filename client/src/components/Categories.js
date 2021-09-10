@@ -53,7 +53,7 @@ function CategoryList({ items, toggleItemActive }) {
   return (
     <List
       height={200}
-      itemCount={items.length}
+      itemCount={items ? items.length : 0}
       itemData={itemData}
       itemSize={35}
     >

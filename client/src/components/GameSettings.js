@@ -9,6 +9,12 @@ import Stack from '@mui/material/Stack';
 import Categories from './Categories';
 import Letters from './Letters';
 import SliderInput from './SliderInput';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import { useState } from 'react';
 
 const panels = {
@@ -21,7 +27,9 @@ const GameSettings = ({
   setGameSettings,
   categories,
   setCategories,
+  resetGameSettings,
 }) => {
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [panelExpanded, setPanelExpanded] = useState(false);
   const handlePanelExpansion = (panel) => (event, isExpanded) => {
     setPanelExpanded(isExpanded ? panel : false);
@@ -29,37 +37,37 @@ const GameSettings = ({
 
   // General Settings
   const setNumOfRounds = (numOfRounds) => {
-    setGameSettings({...gameSettings, numOfRounds});
+    setGameSettings({ ...gameSettings, numOfRounds });
   }
   const setLengthOfRound = (lengthOfRound) => {
-    setGameSettings({...gameSettings, lengthOfRound});
+    setGameSettings({ ...gameSettings, lengthOfRound });
   }
   const onScoringToggle = (event) => {
     const checked = event.target.checked;
-    setGameSettings({...gameSettings, multiScoring: checked});
+    setGameSettings({ ...gameSettings, multiScoring: checked });
   }
-  
+
   // Category Settings
   const setNumOfCategories = (numOfCategories) => {
-    setGameSettings({...gameSettings, numOfCategories});
+    setGameSettings({ ...gameSettings, numOfCategories });
   }
 
   const setDefaultCategories = (defaultCategories) => {
-    setCategories({...categories, defaultCategories});
+    setCategories({ ...categories, defaultCategories });
   }
   const setCustomCategories = (customCategories) => {
-    setCategories({...categories, customCategories});
+    setCategories({ ...categories, customCategories });
   }
 
   // Letter Settings
   const setLetters = (letters) => {
-    setGameSettings({...gameSettings, letters});
+    setGameSettings({ ...gameSettings, letters });
   }
-  
+
   const setLetterRotation = (checked) => {
-    setGameSettings({...gameSettings, letterRotation: checked});
+    setGameSettings({ ...gameSettings, letterRotation: checked });
   }
-  
+
   const roundParams = {
     title: 'Number of Rounds',
     value: gameSettings.numOfRounds,
@@ -104,6 +112,14 @@ const GameSettings = ({
     setCustomCategories,
   }
 
+  const handleClickOpen = () => {
+    setResetDialogOpen(true);
+  };
+
+  const handleClose = () => {
+    setResetDialogOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -111,10 +127,37 @@ const GameSettings = ({
         mx: 4,
       }}
     >
-      <Typography variant="h3" sx={{ m: 1 }}>
-        Game Settings
-      </Typography>
+      <Stack direction="column" >
+        <Typography variant="h3" >
+          Game Settings
+        </Typography>
 
+        <Button variant="outlined" onClick={handleClickOpen} sx={{ mb: 1, width: '200px' }}>
+          Default Settings
+        </Button>
+        <Dialog
+          open={resetDialogOpen}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Reset Game Settings ?
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Revert game settings back to their default values ?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} autoFocus>No</Button>
+            <Button onClick={() => {
+              resetGameSettings();
+              handleClose();
+            }} autoFocus>Yes</Button>
+          </DialogActions>
+        </Dialog>
+      </Stack>
       <Accordion
         expanded={panelExpanded === panels.general}
         onChange={handlePanelExpansion(panels.general)}
@@ -132,8 +175,8 @@ const GameSettings = ({
           <Box sx={{ mt: 2 }}>
             <Typography >Scoring</Typography>
             <Typography sx={{ color: 'text.secondary' }}>
-            Determines if a positive ratio of upvotes to downvotes on an answer counts as one single point
-            or whether the total positive balance of votes is worth its sum in points
+              Determines if a positive ratio of upvotes to downvotes on an answer counts as one single point
+              or whether the total positive balance of votes is worth its sum in points
             </Typography>
             <Stack direction="row" spacing={5} alignItems="center">
               <Typography>Single Point Per Answer</Typography>

@@ -14,14 +14,16 @@ const Lobby = () => {
   const socket = useContext(SocketContext);
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState('');
-  const [gameSettings, setSettings] = useState({
+  const defaultGameSettings = {
     numOfRounds: 3,
     lengthOfRound: 120,
     multiScoring: true,
     numOfCategories: 12,
     letters: generateLetters(),
     letterRotation: false,
-  });
+  }
+  const [gameSettings, setSettings] = useState(defaultGameSettings);
+
   const [categories, setStateCategories] = useState({
     defaultCategories: generateCategories(true),
     customCategories: [],
@@ -42,26 +44,36 @@ const Lobby = () => {
         setRoom(payload.room);
       });
     }
-    
+
     const loadCache = () => {
       const settings = fetchObject(keys.gameSettings);
-      if (settings){
-        setGameSettings({...settings});
+      if (settings) {
+        setGameSettings({ ...settings });
       }
       const ctgs = fetchObject(keys.categories);
       if (ctgs) {
-        setStateCategories({...ctgs});
+        setStateCategories({ ...ctgs });
       }
     }
     loadCache();
     setUserChangeSocket();
   }, [socket]);
 
+  const resetGameSettings = () => {
+    console.log("resetting settings")
+    setGameSettings(defaultGameSettings);
+    setCategories({
+      defaultCategories: generateCategories(true),
+      customCategories: [],
+    });
+  }
+
   const gameSettingsParams = {
     gameSettings,
     setGameSettings,
     categories,
-    setCategories
+    setCategories,
+    resetGameSettings,
   }
 
   return (
