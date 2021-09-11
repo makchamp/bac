@@ -1,25 +1,25 @@
 
 const keys = {
-	gameSettings: 'gameSettings',
-	categories: 'categories'
+  gameSettings: 'gameSettings',
+  categories: 'categories',
+  user: 'user'
 }
 
 const putObject = (key, object) => {
-	localStorage.setItem(key, JSON.stringify(object));
+  localStorage.setItem(key, JSON.stringify(object));
 }
 
 const removeObject = (key) => {
-	localStorage.removeItem(key);
+  localStorage.removeItem(key);
 }
 
 const fetchObject = (key) => {
-	return JSON.parse(localStorage.getItem(key));
+  return JSON.parse(localStorage.getItem(key));
 }
 
-
 export {
-	keys,
-	putObject,
-	fetchObject,
-	removeObject,
+  keys,
+  putObject,
+  fetchObject,
+  removeObject,
 }

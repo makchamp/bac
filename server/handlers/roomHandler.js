@@ -64,5 +64,5 @@ module.exports = (io, socket) => {
   }
 
   socket.on('room:join', joinRoom);
-  socket.on('disconnecting', leaveRoom)
+  socket.on('disconnecting', leaveRoom);
 };

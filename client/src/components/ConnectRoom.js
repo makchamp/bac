@@ -6,11 +6,13 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { styled } from '@mui/material/styles';
 import logo from '../logo.svg';
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
 import { connectRoom } from '../services/roomService';
 import { Route, useHistory } from "react-router-dom";
 import Lobby from './Lobby';
+import { putObject, fetchObject, keys } from '../services/cache';
+import axios from 'axios';
 
 const RoomInputField = styled(Input)(() => ({
   height: 80,
@@ -31,10 +33,25 @@ const ConnectRoom = () => {
     e.preventDefault();
 
     connectRoom(socket, { userName, roomName });
+    putObject(keys.user, { userName, roomName });
     history.push(`/room/${roomName}`);
-    setUserName('');
-    setRoomName('');
   }
+
+  useEffect(() => {
+    const loadCache = () => {
+      const user = fetchObject(keys.user);
+      if (user) {
+        setUserName(user.userName);
+        setRoomName(user.roomName);
+      }
+    };
+    // Used in development to set cross server session cookie
+    if (process.env.NODE_ENV === 'development') {
+      axios.get('/ping')
+        .catch(err => console.log(err));
+    }
+    loadCache();
+  }, []);
 
   return (
     <>

@@ -61,7 +61,6 @@ const Lobby = () => {
   }, [socket]);
 
   const resetGameSettings = () => {
-    console.log("resetting settings")
     setGameSettings(defaultGameSettings);
     setCategories({
       defaultCategories: generateCategories(true),
