@@ -5,21 +5,23 @@ const setUpHandlers = require('./handlers');
 const path = require('path');
 const app = express();
 const httpServer = require('http').createServer(app);
+const store = require('./store')(session);
 
 const {
   PORT,
   HOST,
   CLIENT_URL,
   SESSION_SECRET,
-  CLIENT_BUILD_DIR,z
+  CLIENT_BUILD_DIR,
 } = process.env;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 const sessionMiddleware = session({
+  store,
   secret: SESSION_SECRET || 'secret',
   resave: false,
   saveUninitialized: true,
-  cookie: { 
+  cookie: {
     sameSite: 'lax',
   }
 });
@@ -32,7 +34,7 @@ if (NODE_ENV === 'development') {
     res.sendStatus(200);
   });
 }
-const clientPath = CLIENT_BUILD_DIR || '../client/build'; 
+const clientPath = CLIENT_BUILD_DIR || '../client/build';
 app.use(express.static(path.join(__dirname, clientPath)));
 app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, clientPath, 'index.html'));
@@ -50,7 +52,7 @@ const wrap = middleware => (socket, next) => middleware(socket.request, {}, next
 io.use(wrap(sessionMiddleware));
 
 io.on('connection', (socket) => {
-  setUpHandlers(io, socket);
+  setUpHandlers(io, socket, store);
 });
 
 httpServer.listen(PORT, () => {

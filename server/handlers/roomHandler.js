@@ -1,6 +1,6 @@
 const rooms = {};
 
-module.exports = (io, socket) => {
+module.exports = (io, socket, store) => {
   const joinRoom = (payload) => {
     const { userName, roomName } = payload;
     const userID = socket.id;
