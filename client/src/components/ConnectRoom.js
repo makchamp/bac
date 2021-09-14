@@ -6,9 +6,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { styled } from '@mui/material/styles';
 import logo from '../logo.svg';
-import { useContext, useState, useEffect } from 'react'
-import { SocketContext } from '../services/socket';
-import { connectRoom } from '../services/roomService';
+import { useState, useEffect } from 'react'
 import { Route, useHistory } from "react-router-dom";
 import Lobby from './Lobby';
 import { putObject, fetchObject, keys } from '../services/cache';
@@ -24,7 +22,6 @@ const RoomInputField = styled(Input)(() => ({
 }));
 
 const ConnectRoom = () => {
-  const socket = useContext(SocketContext);
   const [userName, setUserName] = useState('');
   const [roomName, setRoomName] = useState('');
   const history = useHistory();
@@ -32,7 +29,6 @@ const ConnectRoom = () => {
   function HandleSubmit(e) {
     e.preventDefault();
 
-    connectRoom(socket, { userName, roomName });
     putObject(keys.user, { userName, roomName });
     history.push(`/room/${roomName}`);
   }
@@ -55,7 +51,11 @@ const ConnectRoom = () => {
 
   return (
     <>
-      <Route path={`/room/${roomName}`} component={Lobby} />
+      <Route
+        path={`/room/${roomName}`}
+        render={(props) =>
+        (<Lobby userName={userName} roomName={roomName}></Lobby>)}
+      />
       <Container component="main">
         <CssBaseline />
         <Route exact path='/' render={(props) => (

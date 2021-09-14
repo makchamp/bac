@@ -4,13 +4,14 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
+import { connectRoom } from '../services/roomService';
 import { userSetChanged } from '../services/roomService';
 import GameSettings from './GameSettings';
 import { generateLetters } from './Letters';
 import { generateCategories } from './Categories';
 import { putObject, fetchObject, keys } from '../services/cache';
 
-const Lobby = () => {
+const Lobby = ({userName, roomName}) => {
   const socket = useContext(SocketContext);
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState('');
@@ -39,10 +40,13 @@ const Lobby = () => {
   }
 
   useEffect(() => {
+    connectRoom(socket, { userName, roomName });
+
     const setUserChangeSocket = () => {
       socket.on(userSetChanged, (payload) => {
-        setUsers(payload.users);
-        setRoom(payload.room);
+        const { users, room } = payload;
+        setUsers(users ? users: []);
+        setRoom(room ? room: '');
       });
     }
 
@@ -58,7 +62,7 @@ const Lobby = () => {
     }
     loadCache();
     setUserChangeSocket();
-  }, [socket]);
+  }, [socket, userName, roomName]);
 
   const resetGameSettings = () => {
     setGameSettings(defaultGameSettings);
@@ -97,10 +101,10 @@ const Lobby = () => {
             {room}
           </Typography>
           {users.map((
-            (user, index) =>
-            (<Typography variant="h5" key={index}>{user.userName}
+            (user, index) => 
+            (user.inRoom ? <Typography variant="h5" key={index}>{user.userName}
               {user.isHost ? <span> (Host)</span> : ''}
-            </Typography>)))}
+            </Typography> : '')))}
         </Box>
       </Grid>
     </Grid>

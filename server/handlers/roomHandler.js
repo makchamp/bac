@@ -1,66 +1,78 @@
 const rooms = {};
 
 module.exports = (io, socket, store) => {
+  const { sessionID, session } = socket.request;
+  const socketID = socket.id;
+
   const joinRoom = (payload) => {
     const { userName, roomName } = payload;
-    const userID = socket.id;
     if (roomName) {
-      console.log(`User \'${userName}\' (${socket.id}) is joining Room \'${roomName}\'`);
+      console.log(`User \'${userName}\' (${socketID}) is joining Room \'${roomName}\'`);
       socket.join(roomName);
 
-      // Save users in memory
-      if (rooms[roomName]) {
-        rooms[roomName].users[userID] = {
-          userName,
-          isHost: false
+      store.client.hgetall(roomName, (err, room) => {
+        let users;
+        if (room) {
+          users = JSON.parse(room.users);
+          users[sessionID] = {
+            userName,
+            socketID,
+            isHost: users[sessionID] && users[sessionID].isHost,
+          };
         }
-      }
-      else {
-        rooms[roomName] = {
-          users: {}
+        else {
+          users = {};
+          users[sessionID] = {
+            userName,
+            socketID,
+            isHost: true,
+          };
         }
-        rooms[roomName].users[userID] = {
-          userName,
-          isHost: true
-        }
-      }
-      notifyUserSetChanged(roomName);
+        notifyUserSetChanged(roomName, users);
+        store.client.hset(roomName, 'users', JSON.stringify(users));
+        console.log(sessionID);
+        store.get(sessionID, (error, session) => {
+          if (session && sessionID === session){
+            store.set(sessionID, { ...session, room: roomName });
+          }
+        });
+      });
     }
   }
 
-  const notifyUserSetChanged = (roomName) => {
+  const notifyUserSetChanged = (roomName, users) => {
     // Update client with room info
-    const room = rooms[roomName];
-    if (!room) return;
-    const users = Object.keys(room.users).map((key) =>
-      ({ 
-        userName: room.users[key].userName,
-        isHost: room.users[key].isHost 
-      })
-    );
-
+    if (!users) return;
+    const userList = Object.keys(users).map((key) =>
+    ({
+      userName: users[key].userName,
+      isHost: users[key].isHost,
+      inRoom: users[key].socketID ? true : false
+    }));
     io.to(roomName).emit('room:userSetChanged', {
       room: roomName,
-      users,
+      users: userList,
     });
   }
 
-
   const leaveRoom = () => {
-    const roomsToRemove = [];
-    // Delete users from memory
-    for (const [key, value] of Object.entries(rooms)) {
-      delete value.users[socket.id];
-      notifyUserSetChanged(key);
-
-      // If the room is empty, also delete it
-      if (Object.keys(value.users).length === 0) {
-        roomsToRemove.push(key);
+    store.get(sessionID, (error, session) => {
+      if (!error && session) {
+        const roomName = session.room;
+        console.log(sessionID);
+        store.client.hgetall(roomName, (err, room) => {
+          if (room && room.users) {
+            let users = JSON.parse(room.users);
+            const leavingUser = users[sessionID];
+            if (leavingUser.socketID === socketID) {
+              leavingUser.socketID = null;
+              notifyUserSetChanged(roomName, users);
+              store.client.hset(roomName, 'users', JSON.stringify(users));
+            }
+          }
+        });
       }
-    }
-    for (const room in roomsToRemove) {
-      delete rooms[roomsToRemove[room]];
-    }
+    });
   }
 
   socket.on('room:join', joinRoom);
