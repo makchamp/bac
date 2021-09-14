@@ -15,6 +15,7 @@ const {
   CLIENT_BUILD_DIR,
 } = process.env;
 const NODE_ENV = process.env.NODE_ENV || 'development';
+const clientPath = CLIENT_BUILD_DIR || '../client/build';
 
 const sessionMiddleware = session({
   store,
@@ -25,7 +26,19 @@ const sessionMiddleware = session({
     sameSite: 'lax',
   }
 });
-app.use(sessionMiddleware);
+const sessionRoute = (route) => {
+  const routes = ['/', '/ping'];
+  const inRoom = route.includes('/room');
+  return routes.includes(route) || inRoom;
+} 
+const check = app.use((req, res, next) => {
+  if (sessionRoute(req.url)) {
+    sessionMiddleware(req, res, next);
+  }
+  else {
+    next();
+  }
+});
 
 // Used in development to set cross server session cookie
 if (NODE_ENV === 'development') {
@@ -34,7 +47,7 @@ if (NODE_ENV === 'development') {
     res.sendStatus(200);
   });
 }
-const clientPath = CLIENT_BUILD_DIR || '../client/build';
+
 app.use(express.static(path.join(__dirname, clientPath)));
 app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, clientPath, 'index.html'));
