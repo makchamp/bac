@@ -9,7 +9,7 @@ module.exports = (io, socket, store) => {
     if (roomName) {
       console.log(`User \'${userName}\' (${socketID}) is joining Room \'${roomName}\'`);
       socket.join(roomName);
-
+      console.log(socket.rooms);
       store.client.hgetall(roomName, (err, room) => {
         let users;
         if (room) {
@@ -30,9 +30,8 @@ module.exports = (io, socket, store) => {
         }
         notifyUserSetChanged(roomName, users);
         store.client.hset(roomName, 'users', JSON.stringify(users));
-        console.log(sessionID);
         store.get(sessionID, (error, session) => {
-          if (session && sessionID === session){
+          if (session){
             store.set(sessionID, { ...session, room: roomName });
           }
         });
@@ -59,7 +58,6 @@ module.exports = (io, socket, store) => {
     store.get(sessionID, (error, session) => {
       if (!error && session) {
         const roomName = session.room;
-        console.log(sessionID);
         store.client.hgetall(roomName, (err, room) => {
           if (room && room.users) {
             let users = JSON.parse(room.users);
