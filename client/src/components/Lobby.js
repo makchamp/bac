@@ -1,17 +1,15 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
 import { connectRoom } from '../services/roomService';
 import { userSetChanged } from '../services/roomService';
 import GameSettings from './GameSettings';
+import PlayerList from './PlayerList';
 import { generateLetters } from './Letters';
 import { generateCategories } from './Categories';
 import { putObject, fetchObject, keys } from '../services/cache';
 
-const Lobby = ({userName, roomName}) => {
+const Lobby = ({ userName, roomName }) => {
   const socket = useContext(SocketContext);
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState('');
@@ -45,8 +43,8 @@ const Lobby = ({userName, roomName}) => {
     const setUserChangeSocket = () => {
       socket.on(userSetChanged, (payload) => {
         const { users, room } = payload;
-        setUsers(users ? users: []);
-        setRoom(room ? room: '');
+        setUsers(users ? users : []);
+        setRoom(room ? room : '');
       });
     }
 
@@ -86,27 +84,7 @@ const Lobby = ({userName, roomName}) => {
         sx={{ maxHeight: '100vh', overflow: 'auto' }}>
         <GameSettings {...gameSettingsParams}></GameSettings>
       </Grid>
-      <Grid item xs={12} sm={12} md={4} component={Paper}
-        sx={{ maxHeight: '100vh', overflow: 'auto' }}>
-        <Box
-          sx={{
-            my: 8,
-            mx: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="button" sx={{ fontSize: 40 }}>
-            {room}
-          </Typography>
-          {users.map((
-            (user, index) => 
-            (user.inRoom ? <Typography variant="h5" key={index}>{user.userName}
-              {user.isHost ? <span> (Host)</span> : ''}
-            </Typography> : '')))}
-        </Box>
-      </Grid>
+      <PlayerList users={users} roomName={room}></PlayerList>
     </Grid>
   );
 }
