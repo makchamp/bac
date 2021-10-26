@@ -2,8 +2,8 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
-import { connectRoom } from '../services/roomService';
-import { userSetChanged } from '../services/roomService';
+import { userSetChanged, connectRoom } from '../services/roomService';
+import { startGame } from '../services/gameService';
 import GameSettings from './GameSettings';
 import PlayerList from './PlayerList';
 import Round from './Round';
@@ -101,13 +101,23 @@ const Lobby = ({ userName, roomName }) => {
     }
   }
 
+  const setGameStart = () => {
+    startGame(socket, { 
+      userName,
+      roomName,
+      gameSettings,
+      categories });
+
+    setGameState(gameStates.inRound);
+  }
+
   return (
     <Grid container component="main" sx={{ height: '100vh' }} >
       <Grid item xs={12} sm={12} md={8}
         sx={{ maxHeight: '100vh', overflow: 'auto' }}>
         {renderGameState(gameState)}
         {gameState === gameStates.inLobby && <Button variant="contained" size="large" color="success"
-          onClick={() => setGameState(gameStates.inRound)}
+          onClick={() => setGameStart()}
           sx={{
             marginLeft: '40%',
             marginRight: '40%',

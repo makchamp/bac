@@ -1,5 +1,3 @@
-const rooms = {};
-
 module.exports = (io, socket, store) => {
   const { sessionID, session } = socket.request;
   const socketID = socket.id;
