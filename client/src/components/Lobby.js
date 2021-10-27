@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
 import { userSetChanged, connectRoom } from '../services/roomService';
-import { timerEvent, startGame } from '../services/gameService';
+import { timerEvent, stateChangeEvent, startGame } from '../services/gameService';
 import GameSettings from './GameSettings';
 import PlayerList from './PlayerList';
 import Round from './Round';
@@ -49,20 +49,32 @@ const Lobby = ({ userName, roomName }) => {
   }
 
   useEffect(() => {
-    connectRoom(socket, { userName, roomName });
-
+    let mounted = true;
     const setUserChangeSocket = () => {
       socket.on(userSetChanged, (payload) => {
-        const { users, room } = payload;
-        setUsers(users ? users : []);
-        setRoom(room ? room : '');
+        if (mounted) {
+          const { users, room, gameState } = payload;
+          setUsers(users ? users : []);
+          setRoom(room ? room : '');
+          setGameState(gameState);
+        }
       });
     }
+    connectRoom(socket, { userName, roomName });
 
     const setGameTimer = () => {
       socket.on(timerEvent,
       (seconds) => {
-        setTimer(secondsToMinutes(seconds));
+        if (mounted)
+          setTimer(secondsToMinutes(seconds));
+      });
+    }
+
+    const setGameStateListener = () => {
+      socket.on(stateChangeEvent, 
+      (payload) => {
+        if (mounted)
+          setGameState(payload.gameState);
       });
     }
 
@@ -76,9 +88,14 @@ const Lobby = ({ userName, roomName }) => {
         setStateCategories({ ...ctgs });
       }
     }
+  
     loadCache();
     setUserChangeSocket();
     setGameTimer();
+    setGameStateListener();
+    return () => {
+      mounted = false;
+    }
   }, [socket, userName, roomName]);
 
   const resetGameSettings = () => {
@@ -109,9 +126,8 @@ const Lobby = ({ userName, roomName }) => {
       userName,
       roomName,
       gameSettings,
-      categories });
-
-    setGameState(gameStates.inRound);
+      categories
+    });
   }
 
   const renderGameState = (state) => {

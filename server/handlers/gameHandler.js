@@ -20,8 +20,10 @@ module.exports = (io, socket, store) => {
       roomName,
       'categories',
       JSON.stringify(selectCategories(categories, numOfCategories, numOfRounds)));
-      setRoundTimer(roomName, lengthOfRound);
-   
+    store.client.hset(roomName, 'gameState', 'inRound');
+    io.to(roomName).emit('game:stateChange', {gameState: 'inRound'});
+    setRoundTimer(roomName, 30);
+
   }
 
   const setRoundTimer = (roomName, lengthOfRound) => {
@@ -51,6 +53,8 @@ module.exports = (io, socket, store) => {
       store.client.hset(roomName, 'roundTime', counter);
       if (counter < 0) {
         clearRoundTimeout(roomName);
+        io.to(roomName).emit('game:stateChange', {gameState: 'inLobby'});
+        store.client.hset(roomName, 'gameState', 'inLobby');
       }
     });
   }

@@ -25,6 +25,7 @@ module.exports = (io, socket, store) => {
             socketID,
             isHost: true,
           };
+          store.client.hset(roomName, 'gameState', 'inLobby');
         }
         notifyUserSetChanged(roomName, users);
         store.client.hset(roomName, 'users', JSON.stringify(users));
@@ -46,10 +47,16 @@ module.exports = (io, socket, store) => {
       isHost: users[key].isHost,
       inRoom: users[key].socketID ? true : false
     }));
-    io.to(roomName).emit('room:userSetChanged', {
-      room: roomName,
-      users: userList,
-    });
+
+    store.client.hget(roomName, 'gameState', 
+      (error, gameState) => {
+        io.to(roomName).emit('room:userSetChanged', {
+          room: roomName,
+          users: userList,
+          gameState
+        });
+      });
+
   }
 
   const leaveRoom = () => {
