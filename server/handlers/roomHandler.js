@@ -25,7 +25,7 @@ module.exports = (io, socket, store) => {
             socketID,
             isHost: true,
           };
-          store.client.hset(roomName, 'gameState', 'inLobby');
+          store.client.hset(roomName, 'gameState', JSON.stringify({state: 'inLobby'}));
         }
         notifyUserSetChanged(roomName, users);
         store.client.hset(roomName, 'users', JSON.stringify(users));
@@ -53,7 +53,7 @@ module.exports = (io, socket, store) => {
         io.to(roomName).emit('room:userSetChanged', {
           room: roomName,
           users: userList,
-          gameState
+          gameState: JSON.parse(gameState)
         });
       });
 

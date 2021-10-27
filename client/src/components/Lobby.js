@@ -22,7 +22,7 @@ const Lobby = ({ userName, roomName }) => {
     inRound: "inRound",
     postRound: "postRound"
   }
-  const [gameState, setGameState] = useState(gameStates.inLobby);
+  const [gameState, setGameState] = useState({state: gameStates.inLobby});
 
   const defaultGameSettings = {
     numOfRounds: 3,
@@ -72,9 +72,9 @@ const Lobby = ({ userName, roomName }) => {
 
     const setGameStateListener = () => {
       socket.on(stateChangeEvent, 
-      (payload) => {
+      (state) => {
         if (mounted)
-          setGameState(payload.gameState);
+          setGameState(state);
       });
     }
 
@@ -135,7 +135,7 @@ const Lobby = ({ userName, roomName }) => {
       case gameStates.inLobby:
         return <GameSettings {...gameSettingsParams}></GameSettings>;
       case gameStates.inRound:
-        return <Round timer={timer}></Round>;
+        return <Round timer={timer} gameState={gameState}></Round>;
       case gameStates.postRound:
         return <PostRound></PostRound>
       default:
@@ -147,8 +147,8 @@ const Lobby = ({ userName, roomName }) => {
     <Grid container component="main" sx={{ height: '100vh' }} >
       <Grid item xs={12} sm={12} md={8}
         sx={{ maxHeight: '100vh', overflow: 'auto' }}>
-        {renderGameState(gameState)}
-        {gameState === gameStates.inLobby && <Button variant="contained" size="large" color="success"
+        {renderGameState(gameState.state)}
+        {gameState.state === gameStates.inLobby && <Button variant="contained" size="large" color="success"
           onClick={() => setGameStart()}
           sx={{
             marginLeft: '40%',
