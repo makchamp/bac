@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
 import { userSetChanged, connectRoom } from '../services/roomService';
-import { startGame } from '../services/gameService';
+import { timerEvent, startGame } from '../services/gameService';
 import GameSettings from './GameSettings';
 import PlayerList from './PlayerList';
 import Round from './Round';
@@ -16,6 +16,7 @@ const Lobby = ({ userName, roomName }) => {
   const socket = useContext(SocketContext);
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState('');
+  const [timer, setTimer] = useState('');
   const gameStates = {
     inLobby: "inLobby",
     inRound: "inRound",
@@ -58,6 +59,13 @@ const Lobby = ({ userName, roomName }) => {
       });
     }
 
+    const setGameTimer = () => {
+      socket.on(timerEvent,
+      (seconds) => {
+        setTimer(secondsToMinutes(seconds));
+      });
+    }
+
     const loadCache = () => {
       const settings = fetchObject(keys.gameSettings);
       if (settings) {
@@ -70,6 +78,7 @@ const Lobby = ({ userName, roomName }) => {
     }
     loadCache();
     setUserChangeSocket();
+    setGameTimer();
   }, [socket, userName, roomName]);
 
   const resetGameSettings = () => {
@@ -88,17 +97,11 @@ const Lobby = ({ userName, roomName }) => {
     resetGameSettings,
   }
 
-  const renderGameState = (state) => {
-    switch (state) {
-      case gameStates.inLobby:
-        return <GameSettings {...gameSettingsParams}></GameSettings>;
-      case gameStates.inRound:
-        return <Round ></Round>;
-      case gameStates.postRound:
-        return <PostRound></PostRound>
-      default:
-        return <GameSettings {...gameSettingsParams}></GameSettings>;
-    }
+  const secondsToMinutes = (seconds) => {
+    let sec = parseInt(seconds);
+    let dateTime = new Date(null);
+    dateTime.setSeconds(sec);
+    return dateTime.toISOString().substr(15, 4);
   }
 
   const setGameStart = () => {
@@ -109,6 +112,19 @@ const Lobby = ({ userName, roomName }) => {
       categories });
 
     setGameState(gameStates.inRound);
+  }
+
+  const renderGameState = (state) => {
+    switch (state) {
+      case gameStates.inLobby:
+        return <GameSettings {...gameSettingsParams}></GameSettings>;
+      case gameStates.inRound:
+        return <Round timer={timer}></Round>;
+      case gameStates.postRound:
+        return <PostRound></PostRound>
+      default:
+        return <GameSettings {...gameSettingsParams}></GameSettings>;
+    }
   }
 
   return (

@@ -7,15 +7,52 @@ module.exports = (io, socket, store) => {
       userName,
       roomName,
       gameSettings,
-      categories } = payload;
-    const numOfRounds = gameSettings.numOfRounds;
-    const numOfCategories = gameSettings.numOfCategories;    
-    store.client.hset(roomName, 'inGame', true);
+      categories
+    } = payload;
+    const {
+      lengthOfRound,
+      numOfRounds,
+      numOfCategories
+    } = gameSettings;
+
     store.client.hset(roomName, 'gameSettings', JSON.stringify(gameSettings));
     store.client.hset(
       roomName,
       'categories',
       JSON.stringify(selectCategories(categories, numOfCategories, numOfRounds)));
+      setRoundTimer(roomName, lengthOfRound);
+   
+  }
+
+  const setRoundTimer = (roomName, lengthOfRound) => {
+    const interval = setInterval(roundIntervalHandler, 1000, roomName);
+    setRoundTimeout(roomName, interval);
+    store.client.hset(roomName, 'roundTime', lengthOfRound);
+  }
+
+  const clearRoundTimeout = (roomName) => {
+    store.client.hget(roomName, 'roundTimeoutId',
+      (error, roundTimeout) => {
+        if (roundTimeout)
+          clearInterval(roundTimeout);
+      }
+    );
+  }
+
+  const setRoundTimeout = (roomName, timeout) => {
+    clearRoundTimeout(roomName);
+    store.client.hset(roomName, 'roundTimeoutId', timeout[Symbol.toPrimitive]());
+  }
+
+  const roundIntervalHandler = (roomName) => {
+    store.client.hget(roomName, 'roundTime', (error, time) => {
+      let counter = parseInt(time);
+      io.to(roomName).emit('game:timer', counter--);
+      store.client.hset(roomName, 'roundTime', counter);
+      if (counter < 0) {
+        clearRoundTimeout(roomName);
+      }
+    });
   }
 
   const selectCategories = (
@@ -25,7 +62,7 @@ module.exports = (io, socket, store) => {
   ) => {
     const active = categories.defaultCategories.flatMap(
       category => category.isActive ? [category.label] : []);
-    
+
     //TODO: randomize & add custom categories
     return active.slice(0, numOfCategories);
   }
