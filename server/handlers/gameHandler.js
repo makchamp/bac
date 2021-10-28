@@ -129,7 +129,7 @@ module.exports = (io, socket, store) => {
   }
 
   const selectRandomLetter = (letters) => {
-    const idx = Math.floor((Math.random() * letters.length - 1));
+    const idx = Math.floor((Math.random() * letters.length));
     return letters[idx];
   }
 

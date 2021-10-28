@@ -20,9 +20,13 @@ const Lobby = ({ userName, roomName }) => {
   const gameStates = {
     inLobby: "inLobby",
     inRound: "inRound",
-    postRound: "postRound"
+    inPostRound: "inPostRound"
   }
-  const [gameState, setGameState] = useState({state: gameStates.inLobby});
+  const [gameState, setGameState] = useState({
+    state: gameStates.inLobby,
+    currentRound: 1
+  });
+  const [answers, setAnswers] = useState([]);
 
   const defaultGameSettings = {
     numOfRounds: 3,
@@ -64,18 +68,25 @@ const Lobby = ({ userName, roomName }) => {
 
     const setGameTimer = () => {
       socket.on(timerEvent,
-      (seconds) => {
-        if (mounted)
-          setTimer(secondsToMinutes(seconds));
-      });
+        (seconds) => {
+          if (mounted)
+            setTimer(secondsToMinutes(seconds));
+        });
     }
 
     const setGameStateListener = () => {
-      socket.on(stateChangeEvent, 
-      (state) => {
-        if (mounted)
-          setGameState(state);
-      });
+      socket.on(stateChangeEvent,
+        (payload) => {
+          if (mounted) {
+            if (payload.state === gameStates.inLobby ||
+              payload.state === gameStates.inPostRound) {
+                //TODO: handle answers
+                console.log(JSON.stringify(answers));
+                setAnswers([]);
+            }
+            setGameState(payload);
+          }
+        });
     }
 
     const loadCache = () => {
@@ -88,7 +99,7 @@ const Lobby = ({ userName, roomName }) => {
         setStateCategories({ ...ctgs });
       }
     }
-  
+
     loadCache();
     setUserChangeSocket();
     setGameTimer();
@@ -96,7 +107,15 @@ const Lobby = ({ userName, roomName }) => {
     return () => {
       mounted = false;
     }
-  }, [socket, userName, roomName]);
+  }, [
+    socket,
+    userName,
+    roomName,
+    gameStates.inLobby,
+    gameStates.inRound,
+    gameStates.inPostRound,
+    answers
+  ]);
 
   const resetGameSettings = () => {
     setGameSettings(defaultGameSettings);
@@ -122,7 +141,7 @@ const Lobby = ({ userName, roomName }) => {
   }
 
   const setGameStart = () => {
-    startGame(socket, { 
+    startGame(socket, {
       userName,
       roomName,
       gameSettings,
@@ -130,12 +149,22 @@ const Lobby = ({ userName, roomName }) => {
     });
   }
 
+  const saveAnswer = (index, value) => {
+    const ans = answers.length === 0 ? gameState.categories[gameState.currentRound - 1] : answers;
+    ans[index].answer = value;
+    setAnswers(ans);
+  }
+
   const renderGameState = (state) => {
     switch (state) {
       case gameStates.inLobby:
         return <GameSettings {...gameSettingsParams}></GameSettings>;
       case gameStates.inRound:
-        return <Round timer={timer} gameState={gameState}></Round>;
+        return <Round
+          timer={timer}
+          gameState={gameState}
+          saveAnswer={saveAnswer}>
+        </Round>;
       case gameStates.postRound:
         return <PostRound></PostRound>
       default:
