@@ -3,7 +3,12 @@ import Button from '@mui/material/Button';
 import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
 import { userSetChanged, connectRoom } from '../services/roomService';
-import { timerEvent, stateChangeEvent, startGame } from '../services/gameService';
+import { 
+  timerEvent,
+  stateChangeEvent,
+  startGame,
+  emitAnswer
+ } from '../services/gameService';
 import GameSettings from './GameSettings';
 import PlayerList from './PlayerList';
 import Round from './Round';
@@ -24,7 +29,7 @@ const Lobby = ({ userName, roomName }) => {
   }
   const [gameState, setGameState] = useState({
     state: gameStates.inLobby,
-    currentRound: 1
+    currentRound: 1,
   });
   const [answers, setAnswers] = useState([]);
 
@@ -80,7 +85,6 @@ const Lobby = ({ userName, roomName }) => {
           if (mounted) {
             if (payload.state === gameStates.inLobby ||
               payload.state === gameStates.inPostRound) {
-                //TODO: handle answers
                 console.log(JSON.stringify(answers));
                 setAnswers([]);
             }
@@ -152,6 +156,7 @@ const Lobby = ({ userName, roomName }) => {
   const saveAnswer = (index, value) => {
     const ans = answers.length === 0 ? gameState.categories[gameState.currentRound - 1] : answers;
     ans[index].answer = value;
+    emitAnswer(socket, {roomName, index, value});
     setAnswers(ans);
   }
 

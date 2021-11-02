@@ -67,7 +67,7 @@ module.exports = (io, socket, store) => {
           if (room && room.users) {
             let users = JSON.parse(room.users);
             const leavingUser = users[sessionID];
-            if (leavingUser.socketID === socketID) {
+            if (leavingUser && leavingUser.socketID === socketID) {
               leavingUser.socketID = null;
               notifyUserSetChanged(roomName, users);
               store.client.hset(roomName, 'users', JSON.stringify(users));

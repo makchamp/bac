@@ -35,12 +35,15 @@ module.exports = (io, socket, store) => {
     let gameState = {
       state: 'inRound',
       currentRound: 1,
+      numOfRounds,
       lengthOfRound,
       categories: selectedCategories,
       letterRotation,
-      multiScoring
+      multiScoring,
+      answers: {}
     }
     store.client.hset(roomName, 'gameState', JSON.stringify(gameState));
+    delete gameState.answers;
     io.to(roomName).emit('game:stateChange', gameState);
     setRoundTimer(roomName, lengthOfRound);
   }
@@ -105,7 +108,7 @@ module.exports = (io, socket, store) => {
         const letter = letterRotation ? selectRandomLetter(activeLetters) : selectedLetter;
         ctgs[j] = {
           letter,
-          category: selectedCategories[j]
+          category: selectedCategories[j],
         };
       }
       res[i] = ctgs;
@@ -133,5 +136,31 @@ module.exports = (io, socket, store) => {
     return letters[idx];
   }
 
+  const handleAnswer = (payload) => {
+    const roomName = payload.roomName;
+    const idx = payload.index;
+    const ans = payload.value;
+    store.client.hget(roomName, 'gameState', (error, gameState) => {
+
+      try {
+        const state = JSON.parse(gameState);
+        const { currentRound, numOfRounds, answers, categories } = state;
+
+        if (!answers[sessionID]) {
+          const numOfCategories = categories[currentRound - 1].length;
+          answers[sessionID] = Array.from(
+            Array(numOfRounds), 
+            () => new Array(numOfCategories).fill({}));
+        }
+        answers[sessionID][currentRound - 1][idx] = { ans };
+        store.client.hset(roomName, 'gameState', JSON.stringify(state));
+      }
+      catch (error) {
+        console.error(error);
+      }
+    });
+  }
+
   socket.on('game:start', startGame);
+  socket.on('game:answer', handleAnswer);
 };

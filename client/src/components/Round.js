@@ -65,6 +65,9 @@ const Round = ({
                     id={gameState.categories[gameState.currentRound - 1].category}
                     placeholder={row.letter.toUpperCase()}
                     fullWidth
+                    inputProps={{ 
+                      maxLength: 75
+                    }}
                     onChange={(e) => {
                       saveAnswer(index, e.target.value);
                     }}
