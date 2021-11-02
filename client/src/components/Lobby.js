@@ -7,7 +7,8 @@ import {
   timerEvent,
   stateChangeEvent,
   startGame,
-  emitAnswer
+  emitAnswer,
+  emitNextCategory,
  } from '../services/gameService';
 import GameSettings from './GameSettings';
 import PlayerList from './PlayerList';
@@ -16,20 +17,22 @@ import { generateLetters } from './Letters';
 import { generateCategories } from './Categories';
 import { putObject, fetchObject, keys } from '../services/cache';
 import PostRound from './PostRound';
+import Voting from './Voting';
 
 const Lobby = ({ userName, roomName }) => {
   const socket = useContext(SocketContext);
   const [users, setUsers] = useState([]);
-  const [room, setRoom] = useState('');
+  const [room, setRoom] = useState(roomName);
   const [timer, setTimer] = useState('');
   const gameStates = {
     inLobby: "inLobby",
     inRound: "inRound",
-    inPostRound: "inPostRound"
+    inPostRound: "inPostRound",
+    inVoting: "inVoting"
   }
   const [gameState, setGameState] = useState({
     state: gameStates.inLobby,
-    currentRound: 1,
+    currentRound: 0,
   });
   const [answers, setAnswers] = useState([]);
 
@@ -83,9 +86,7 @@ const Lobby = ({ userName, roomName }) => {
       socket.on(stateChangeEvent,
         (payload) => {
           if (mounted) {
-            if (payload.state === gameStates.inLobby ||
-              payload.state === gameStates.inPostRound) {
-                console.log(JSON.stringify(answers));
+            if (payload.state !== gameStates.inRound) {
                 setAnswers([]);
             }
             setGameState(payload);
@@ -118,6 +119,7 @@ const Lobby = ({ userName, roomName }) => {
     gameStates.inLobby,
     gameStates.inRound,
     gameStates.inPostRound,
+    gameStates.inVoting,
     answers
   ]);
 
@@ -154,10 +156,18 @@ const Lobby = ({ userName, roomName }) => {
   }
 
   const saveAnswer = (index, value) => {
-    const ans = answers.length === 0 ? gameState.categories[gameState.currentRound - 1] : answers;
+    const ans = answers.length === 0 ? gameState.categories[gameState.currentRound] : answers;
     ans[index].answer = value;
     emitAnswer(socket, {roomName, index, value});
     setAnswers(ans);
+  }
+
+  const vote = (answID, value) => {
+    console.log(`id: ${JSON.stringify(answID)}  value: ${value}`);
+  }
+
+  const nextCategory = () => {
+    emitNextCategory(socket, {roomName});
   }
 
   const renderGameState = (state) => {
@@ -169,7 +179,13 @@ const Lobby = ({ userName, roomName }) => {
           timer={timer}
           gameState={gameState}
           saveAnswer={saveAnswer}>
-        </Round>;
+        </Round>
+      case gameStates.inVoting:
+        return <Voting 
+          gameState={gameState}
+          nextCategory={nextCategory}
+          vote={vote}>
+        </Voting>
       case gameStates.postRound:
         return <PostRound></PostRound>
       default:

@@ -1,6 +1,7 @@
+const { nanoid } = require('nanoid/non-secure');
+
 module.exports = (io, socket, store) => {
   const { sessionID, session } = socket.request;
-  const socketID = socket.id;
 
   const startGame = (payload) => {
     const {
@@ -34,7 +35,7 @@ module.exports = (io, socket, store) => {
 
     let gameState = {
       state: 'inRound',
-      currentRound: 1,
+      currentRound: 0,
       numOfRounds,
       lengthOfRound,
       categories: selectedCategories,
@@ -42,7 +43,7 @@ module.exports = (io, socket, store) => {
       multiScoring,
       answers: {}
     }
-    store.client.hset(roomName, 'gameState', JSON.stringify(gameState));
+    setGameState(roomName, gameState);
     delete gameState.answers;
     io.to(roomName).emit('game:stateChange', gameState);
     setRoundTimer(roomName, lengthOfRound);
@@ -77,13 +78,18 @@ module.exports = (io, socket, store) => {
         clearRoundTimeout(roomName);
         store.client.hget(roomName, 'gameState', (error, gameState) => {
           let gs = JSON.parse(gameState);
-          gs = { ...gs, state: 'inLobby' };
+          compileAnswers(gs);
+          gs.state = 'inLobby';
           io.to(roomName).emit('game:stateChange', gs);
-          store.client.hset(roomName, 'gameState', JSON.stringify(gs));
+          setGameState(roomName, gs);
         });
 
       }
     });
+  }
+
+  const setGameState = (roomName, state) => {
+    store.client.hset(roomName, 'gameState', JSON.stringify(state));
   }
 
   const selectCategories = (
@@ -137,23 +143,26 @@ module.exports = (io, socket, store) => {
   }
 
   const handleAnswer = (payload) => {
-    const roomName = payload.roomName;
-    const idx = payload.index;
-    const ans = payload.value;
+    const {
+      roomName,
+      index,
+      value
+    } = payload;
     store.client.hget(roomName, 'gameState', (error, gameState) => {
-
       try {
         const state = JSON.parse(gameState);
         const { currentRound, numOfRounds, answers, categories } = state;
 
         if (!answers[sessionID]) {
-          const numOfCategories = categories[currentRound - 1].length;
+          const numOfCategories = categories[currentRound].length;
           answers[sessionID] = Array.from(
-            Array(numOfRounds), 
-            () => new Array(numOfCategories).fill({}));
+            Array(numOfRounds),
+            () => new Array(numOfCategories).fill(null).map(
+              () => ({ answID: nanoid(12) }))
+          );
         }
-        answers[sessionID][currentRound - 1][idx] = { ans };
-        store.client.hset(roomName, 'gameState', JSON.stringify(state));
+        answers[sessionID][currentRound][index].answ = value;
+        setGameState(roomName, state);
       }
       catch (error) {
         console.error(error);
@@ -161,6 +170,43 @@ module.exports = (io, socket, store) => {
     });
   }
 
+  const compileAnswers = () => {
+    const state = JSON.parse(gameState);
+    const { currentRound, answers, categories } = state;
+
+    const users = Object.keys(answers);
+    categories[currentRound].forEach((category, index) => {
+      const categoryAns = [];
+      users.forEach(user => {
+        const ans = answers[user][currentRound][index];
+        categoryAns.push(ans);
+      });
+      category.answers = categoryAns;
+    });
+    console.log(JSON.stringify(categories[currentRound]));
+    state.state = 'inVoting';
+    state.currentCategory = 0;
+    io.to(roomName).emit('game:stateChange', state);
+    setGameState(roomName, state);
+  }
+
+  const nextCategory = (payload) => {
+    const { roomName } = payload;
+    store.client.hget(roomName, 'gameState', (error, gameState) => {
+      const state = JSON.parse(gameState);
+      const { currentRound, currentCategory, categories } = state;
+      if (currentCategory < categories[currentRound].length - 1) {
+        state.currentCategory++;
+      }
+      else {
+        state.state = 'inLobby';
+      }
+      setGameState(roomName, state);
+      io.to(roomName).emit('game:stateChange', state);
+    });
+  }
+
   socket.on('game:start', startGame);
   socket.on('game:answer', handleAnswer);
+  socket.on('game:nextCategory', nextCategory);
 };
