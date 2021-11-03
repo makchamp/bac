@@ -8,7 +8,7 @@ import { styled } from '@mui/material/styles';
 import logo from '../logo.svg';
 import { useState, useEffect } from 'react'
 import { Route, useHistory } from "react-router-dom";
-import Lobby from './Lobby';
+import Room from './Room';
 import { putObject, fetchObject, keys } from '../services/cache';
 import axios from 'axios';
 
@@ -54,7 +54,7 @@ const ConnectRoom = () => {
       <Route
         path={`/room/${roomName}`}
         render={(props) =>
-        (<Lobby userName={userName} roomName={roomName}></Lobby>)}
+        (<Room userName={userName} roomName={roomName}></Room>)}
       />
       <Container component="main">
         <CssBaseline />

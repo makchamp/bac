@@ -19,7 +19,7 @@ import { putObject, fetchObject, keys } from '../services/cache';
 import PostRound from './PostRound';
 import Voting from './Voting';
 
-const Lobby = ({ userName, roomName }) => {
+const Room = ({ userName, roomName }) => {
   const socket = useContext(SocketContext);
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState(roomName);
@@ -27,8 +27,8 @@ const Lobby = ({ userName, roomName }) => {
   const gameStates = {
     inLobby: "inLobby",
     inRound: "inRound",
-    inPostRound: "inPostRound",
-    inVoting: "inVoting"
+    inVoting: "inVoting",
+    inPostRound: "inPostRound"
   }
   const [gameState, setGameState] = useState({
     state: gameStates.inLobby,
@@ -213,4 +213,4 @@ const Lobby = ({ userName, roomName }) => {
   );
 }
 
-export default Lobby;
+export default Room;
