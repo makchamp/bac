@@ -5,13 +5,12 @@ module.exports = (io, socket, store) => {
   const joinRoom = (payload) => {
     const { userName, roomName } = payload;
     if (roomName) {
-      console.log(`User \'${userName}\' (${socketID}) is joining Room \'${roomName}\'`);
       socket.join(roomName);
-      console.log(socket.rooms);
-      store.client.hgetall(roomName, (err, room) => {
+      console.log(`User \'${sessionID}\' joined a room ${JSON.stringify([...socket.rooms])}`);
+      store.client.hget(roomName, 'users', (err, roomUsers) => {
         let users;
-        if (room) {
-          users = JSON.parse(room.users);
+        if (roomUsers) {
+          users = JSON.parse(roomUsers);
           users[sessionID] = {
             userName,
             socketID,
@@ -56,16 +55,15 @@ module.exports = (io, socket, store) => {
           gameState: JSON.parse(gameState)
         });
       });
-
   }
 
   const leaveRoom = () => {
     store.get(sessionID, (error, session) => {
       if (!error && session) {
         const roomName = session.room;
-        store.client.hgetall(roomName, (err, room) => {
-          if (room && room.users) {
-            let users = JSON.parse(room.users);
+        store.client.hget(roomName, 'users', (err, roomUsers) => {
+          if (roomUsers) {
+            let users = JSON.parse(roomUsers);
             const leavingUser = users[sessionID];
             if (leavingUser && leavingUser.socketID === socketID) {
               leavingUser.socketID = null;

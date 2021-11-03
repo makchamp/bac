@@ -18,7 +18,7 @@ module.exports = (io, socket, store) => {
       letterRotation,
       multiScoring
     } = gameSettings;
-
+    
     store.client.hset(roomName, 'gameSettings', JSON.stringify(gameSettings));
     const selectedCategories = selectCategories(
       categories,
@@ -78,8 +78,7 @@ module.exports = (io, socket, store) => {
         clearRoundTimeout(roomName);
         store.client.hget(roomName, 'gameState', (error, gameState) => {
           let gs = JSON.parse(gameState);
-          compileAnswers(gs);
-          gs.state = 'inLobby';
+          compileAnswers(roomName, gs);
           io.to(roomName).emit('game:stateChange', gs);
           setGameState(roomName, gs);
         });
@@ -170,10 +169,8 @@ module.exports = (io, socket, store) => {
     });
   }
 
-  const compileAnswers = () => {
-    const state = JSON.parse(gameState);
+  const compileAnswers = (roomName, state) => {
     const { currentRound, answers, categories } = state;
-
     const users = Object.keys(answers);
     categories[currentRound].forEach((category, index) => {
       const categoryAns = [];
@@ -183,7 +180,6 @@ module.exports = (io, socket, store) => {
       });
       category.answers = categoryAns;
     });
-    console.log(JSON.stringify(categories[currentRound]));
     state.state = 'inVoting';
     state.currentCategory = 0;
     io.to(roomName).emit('game:stateChange', state);
