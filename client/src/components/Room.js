@@ -3,13 +3,13 @@ import Button from '@mui/material/Button';
 import { useContext, useState, useEffect } from 'react'
 import { SocketContext } from '../services/socket';
 import { userSetChanged, connectRoom } from '../services/roomService';
-import { 
+import {
   timerEvent,
   stateChangeEvent,
   startGame,
   emitAnswer,
   emitNextCategory,
- } from '../services/gameService';
+} from '../services/gameService';
 import GameSettings from './GameSettings';
 import PlayerList from './PlayerList';
 import Round from './Round';
@@ -21,8 +21,14 @@ import Voting from './Voting';
 
 const Room = ({ userName, roomName }) => {
   const socket = useContext(SocketContext);
+
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState(roomName);
+  useEffect(() => {
+    if (userName && roomName)
+      connectRoom(socket, { userName, roomName });
+  }, [socket, userName, roomName]);
+
   const [timer, setTimer] = useState('');
   const gameStates = {
     inLobby: "inLobby",
@@ -61,6 +67,21 @@ const Room = ({ userName, roomName }) => {
   }
 
   useEffect(() => {
+    const loadCache = () => {
+      const settings = fetchObject(keys.gameSettings);
+      if (settings) {
+        setGameSettings({ ...settings });
+      }
+      const ctgs = fetchObject(keys.categories);
+      if (ctgs) {
+        setStateCategories({ ...ctgs });
+      }
+    }
+
+    loadCache();
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
     const setUserChangeSocket = () => {
       socket.on(userSetChanged, (payload) => {
@@ -72,7 +93,6 @@ const Room = ({ userName, roomName }) => {
         }
       });
     }
-    connectRoom(socket, { userName, roomName });
 
     const setGameTimer = () => {
       socket.on(timerEvent,
@@ -87,25 +107,13 @@ const Room = ({ userName, roomName }) => {
         (payload) => {
           if (mounted) {
             if (payload.state !== gameStates.inRound) {
-                setAnswers([]);
+              setAnswers([]);
             }
             setGameState(payload);
           }
         });
     }
 
-    const loadCache = () => {
-      const settings = fetchObject(keys.gameSettings);
-      if (settings) {
-        setGameSettings({ ...settings });
-      }
-      const ctgs = fetchObject(keys.categories);
-      if (ctgs) {
-        setStateCategories({ ...ctgs });
-      }
-    }
-
-    loadCache();
     setUserChangeSocket();
     setGameTimer();
     setGameStateListener();
@@ -114,13 +122,11 @@ const Room = ({ userName, roomName }) => {
     }
   }, [
     socket,
-    userName,
-    roomName,
+    answers,
     gameStates.inLobby,
     gameStates.inRound,
     gameStates.inPostRound,
     gameStates.inVoting,
-    answers
   ]);
 
   const resetGameSettings = () => {
@@ -158,7 +164,7 @@ const Room = ({ userName, roomName }) => {
   const saveAnswer = (index, value) => {
     const ans = answers.length === 0 ? gameState.categories[gameState.currentRound] : answers;
     ans[index].answer = value;
-    emitAnswer(socket, {roomName, index, value});
+    emitAnswer(socket, { roomName, index, value });
     setAnswers(ans);
   }
 
@@ -167,7 +173,7 @@ const Room = ({ userName, roomName }) => {
   }
 
   const nextCategory = () => {
-    emitNextCategory(socket, {roomName});
+    emitNextCategory(socket, { roomName });
   }
 
   const renderGameState = (state) => {
@@ -181,7 +187,7 @@ const Room = ({ userName, roomName }) => {
           saveAnswer={saveAnswer}>
         </Round>
       case gameStates.inVoting:
-        return <Voting 
+        return <Voting
           gameState={gameState}
           nextCategory={nextCategory}
           vote={vote}>
