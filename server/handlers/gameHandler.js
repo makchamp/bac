@@ -18,7 +18,7 @@ module.exports = (io, socket, store) => {
       letterRotation,
       multiScoring
     } = gameSettings;
-    
+
     store.client.hset(roomName, 'gameSettings', JSON.stringify(gameSettings));
     const selectedCategories = selectCategories(
       categories,
@@ -202,7 +202,71 @@ module.exports = (io, socket, store) => {
     });
   }
 
+  const castVote = (votes) => {
+    if (!votes) {
+      votes = [sessionID];
+    }
+    else {
+      const idx = votes.indexOf(sessionID);
+      idx === -1 ? votes.push(sessionID) : votes.splice(idx, 1);
+    }
+    return votes;
+  }
+
+  const unCastVote = (votes) => {
+    if (votes) {
+      const idx = votes.indexOf(sessionID);
+      if (idx > -1) {
+        votes.splice(idx, 1);
+      }
+    }
+    return votes;
+  }
+
+  const tallyAnswer = (upvotes, downvotes) => {
+    const numUpvotes = upvotes ? upvotes.length : 0;
+    const numDownvotes = downvotes? downvotes.length : 0;
+
+    const score = numUpvotes - numDownvotes;
+    return score; 
+  }
+
+  const hanldeVote = (payload) => {
+    const { answID, vote } = payload;
+    const roomName = session.room
+    store.client.hget(roomName, 'gameState', (error, gameState) => {
+      const state = JSON.parse(gameState);
+      const { currentRound, currentCategory, categories, answers } = state;
+
+      const ctg = categories[currentRound][currentCategory];
+
+      const playerAnswers = Object.keys(answers);
+      for (let i = 0; i < playerAnswers.length; i++) {
+        const playerID = playerAnswers[i];
+        const answer = answers[playerID][currentRound][currentCategory];
+        if (sessionID !== playerID && answer.answID === answID) {
+
+          if (vote.label === 'upvote') {
+            answer.upvotes = castVote(answer.upvotes);
+            answer.downvotes = unCastVote(answer.downvotes);
+          }
+          else {
+            answer.downvotes = castVote(answer.downvotes);
+            answer.upvotes = unCastVote(answer.upvotes);
+          }
+          
+          const idx = ctg.answers.findIndex(ans => ans.answID === answID);
+          ctg.answers[idx].score = tallyAnswer(answer.upvotes, answer.downvotes);
+          break;
+        }
+      }
+      setGameState(roomName, state);
+      io.to(roomName).emit('game:stateChange', state);
+    });
+  }
+
   socket.on('game:start', startGame);
   socket.on('game:answer', handleAnswer);
   socket.on('game:nextCategory', nextCategory);
+  socket.on('game:vote', hanldeVote);
 };
