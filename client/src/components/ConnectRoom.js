@@ -34,6 +34,14 @@ const ConnectRoom = () => {
   }
 
   useEffect(() => {
+    // Used in development to set cross server session cookie
+    if (process.env.NODE_ENV === 'development') {
+      axios.get('/ping')
+        .catch(err => console.log(err));
+    }
+  }, []);
+
+  useEffect(() => {
     const loadCache = () => {
       const user = fetchObject(keys.user);
       if (user) {
@@ -41,11 +49,6 @@ const ConnectRoom = () => {
         setRoomName(user.roomName);
       }
     };
-    // Used in development to set cross server session cookie
-    if (process.env.NODE_ENV === 'development') {
-      axios.get('/ping')
-        .catch(err => console.log(err));
-    }
     loadCache();
   }, []);
 

@@ -2,7 +2,8 @@
 const keys = {
   gameSettings: 'gameSettings',
   categories: 'categories',
-  user: 'user'
+  user: 'user',
+  ratings: 'ratings'
 }
 
 const putObject = (key, object) => {

@@ -9,13 +9,14 @@ import {
   startGame,
   emitAnswer,
   emitNextCategory,
+  emitVote,
 } from '../services/gameService';
 import GameSettings from './GameSettings';
 import PlayerList from './PlayerList';
 import Round from './Round';
 import { generateLetters } from './Letters';
 import { generateCategories } from './Categories';
-import { putObject, fetchObject, keys } from '../services/cache';
+import { putObject, removeObject, fetchObject, keys } from '../services/cache';
 import PostRound from './PostRound';
 import Voting from './Voting';
 
@@ -153,6 +154,7 @@ const Room = ({ userName, roomName }) => {
   }
 
   const setGameStart = () => {
+    removeObject(keys.ratings);
     startGame(socket, {
       userName,
       roomName,
@@ -170,6 +172,7 @@ const Room = ({ userName, roomName }) => {
 
   const vote = (answID, value) => {
     console.log(`id: ${JSON.stringify(answID)}  value: ${value}`);
+    emitVote(socket, {answID, vote: value});
   }
 
   const nextCategory = () => {
