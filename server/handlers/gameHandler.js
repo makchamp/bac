@@ -232,8 +232,7 @@ module.exports = (io, socket, store) => {
   }
 
   const hanldeVote = (payload) => {
-    const { answID, vote } = payload;
-    const roomName = session.room
+    const { roomName, answID, vote } = payload;
     store.client.hget(roomName, 'gameState', (error, gameState) => {
       const state = JSON.parse(gameState);
       const { currentRound, currentCategory, categories, answers } = state;

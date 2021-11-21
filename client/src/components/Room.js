@@ -176,8 +176,7 @@ const Room = ({ userName, roomName }) => {
   }
 
   const vote = (answID, value) => {
-    console.log(`id: ${JSON.stringify(answID)}  value: ${value}`);
-    emitVote(socket, { answID, vote: value });
+    emitVote(socket, { roomName, answID, vote: value });
   }
 
   const nextCategory = () => {
