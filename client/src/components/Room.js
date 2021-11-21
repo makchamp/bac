@@ -19,15 +19,19 @@ import { generateCategories } from './Categories';
 import { putObject, removeObject, fetchObject, keys } from '../services/cache';
 import PostRound from './PostRound';
 import Voting from './Voting';
+import Loading from './Loading';
 
 const Room = ({ userName, roomName }) => {
   const socket = useContext(SocketContext);
+  const [loading, setLoading] = useState(false);
 
   const [users, setUsers] = useState([]);
   const [room, setRoom] = useState(roomName);
   useEffect(() => {
-    if (userName && roomName)
+    if (userName && roomName) {
+      setLoading(true);
       connectRoom(socket, { userName, roomName });
+    }
   }, [socket, userName, roomName]);
 
   const [timer, setTimer] = useState('');
@@ -91,6 +95,7 @@ const Room = ({ userName, roomName }) => {
           setUsers(users ? users : []);
           setRoom(room ? room : '');
           setGameState(gameState);
+          setLoading(false);
         }
       });
     }
@@ -172,7 +177,7 @@ const Room = ({ userName, roomName }) => {
 
   const vote = (answID, value) => {
     console.log(`id: ${JSON.stringify(answID)}  value: ${value}`);
-    emitVote(socket, {answID, vote: value});
+    emitVote(socket, { answID, vote: value });
   }
 
   const nextCategory = () => {
@@ -204,20 +209,24 @@ const Room = ({ userName, roomName }) => {
 
   return (
     <Grid container component="main" sx={{ height: '100vh' }} >
-      <Grid item xs={12} sm={12} md={8}
-        sx={{ maxHeight: '100vh', overflow: 'auto' }}>
-        {renderGameState(gameState.state)}
-        {gameState.state === gameStates.inLobby && <Button variant="contained" size="large" color="success"
-          onClick={() => setGameStart()}
-          sx={{
-            marginLeft: '40%',
-            marginRight: '40%',
-            height: '50px',
-          }}>
-          Start Game!
-        </Button>}
-      </Grid>
-      <PlayerList users={users} roomName={room}></PlayerList>
+      {loading ? <Loading/> :
+        <>
+          <Grid item xs={12} sm={12} md={8}
+            sx={{ maxHeight: '100vh', overflow: 'auto' }}>
+            {renderGameState(gameState.state)}
+            {gameState.state === gameStates.inLobby && <Button variant="contained" size="large" color="success"
+              onClick={() => setGameStart()}
+              sx={{
+                marginLeft: '40%',
+                marginRight: '40%',
+                height: '50px',
+              }}>
+              Start Game!
+            </Button>}
+          </Grid>
+          <PlayerList users={users} roomName={room}></PlayerList>
+        </>
+      }
     </Grid>
   );
 }
