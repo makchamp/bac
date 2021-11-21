@@ -6,9 +6,11 @@ import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Switch from '@mui/material/Switch';
 import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Grid';
 import Categories from './Categories';
 import Letters from './Letters';
 import SliderInput from './SliderInput';
+import SettingCard from './SettingCard';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -16,6 +18,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useState } from 'react';
+
+import { blue, green, teal, purple, indigo, } from '@mui/material/colors';
+import TimerIcon from '@mui/icons-material/Timer';
+import CategoryIcon from '@mui/icons-material/Category';
+import SpellcheckIcon from '@mui/icons-material/Spellcheck';
+import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
+import MoreTimeIcon from '@mui/icons-material/MoreTime';
 
 const panels = {
   general: "generalPanel",
@@ -227,6 +236,46 @@ const GameSettings = ({
           <Letters {...letterParams}></Letters>
         </AccordionDetails>
       </Accordion>
+      <Grid
+        container
+        direction="row"
+        justifyContent="space-evenly"
+        alignItems="center"
+        sx={{ marginTop: 3 }}
+      >
+        <SettingCard
+          title={gameSettings.numOfRounds}
+          subheader="Number of Rounds"
+          color={teal[700]}
+          icon={MoreTimeIcon}
+        />
+        <SettingCard
+          title={gameSettings.lengthOfRound}
+          subheader="Round Duration"
+          color={green[700]}
+          icon={TimerIcon}
+        />
+        <SettingCard
+          title={gameSettings.multiScoring ? "Mulitple Point Answers" : "Single Point Answers"}
+          subheader="Scoring"
+          titleSize={16}
+          color={blue[700]}
+          icon={MilitaryTechIcon}
+        />
+        <SettingCard
+          title={gameSettings.numOfCategories}
+          subheader="Categories Per Round"
+          color={purple[700]}
+          icon={CategoryIcon}
+        />
+        <SettingCard
+          title={gameSettings.letterRotation ? "Mulitple Letter Round" : "Single Letter Round"}
+          subheader="Letter Rotation"
+          titleSize={16}
+          color={indigo[700]}
+          icon={SpellcheckIcon}
+        />
+      </Grid>
     </Box>
   );
 }
