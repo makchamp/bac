@@ -22,8 +22,11 @@ function emitVote(socket, data) {
 }
 
 export {
+  startEvent,
   timerEvent,
   stateChangeEvent,
+  nextCategoryEvent,
+  voteEvent,
   startGame,
   emitAnswer,
   emitNextCategory,

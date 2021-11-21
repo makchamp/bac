@@ -13,9 +13,9 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
-import { useState, useEffect } from 'react'
-import { putObject, removeObject, fetchObject, keys } from '../services/cache';
-
+import { useState, useEffect, useCallback } from 'react'
+import { putObject, fetchObject, keys } from '../services/cache';
+import { nextCategoryEvent } from '../services/gameService';
 const Voting = ({
   gameState,
   vote,
@@ -24,10 +24,11 @@ const Voting = ({
   const currentCategory = gameState.currentCategory;
   const categories = gameState.categories[gameState.currentRound];
   const category = categories[currentCategory];
+  const [loaded, setLoaded] = useState(false);
 
-  const answerRatings = () => {
-    return category.answers.map(({ answID, score, ...checked }) => checked)
-  }
+  const answerRatings = useCallback(() => {
+    return category.answers.map(({ answ, score, ...checked }) => checked)
+  }, [category.answers]);
   const [votingButtons, setVotingButtons] = useState(answerRatings());
 
   const voteButtonLabels = {
@@ -36,14 +37,25 @@ const Voting = ({
   }
 
   useEffect(() => {
+    if (gameState.event === nextCategoryEvent) {
+      setVotingButtons(answerRatings());
+    }
+
+    const assertStateMatch = (state) => {
+      return state[0] && category.answers[0] && state[0].answID === category.answers[0].answID;
+    }
     const loadCache = () => {
       const ratings = fetchObject(keys.ratings);
-      if (ratings) {
+      if (ratings && assertStateMatch(ratings)) {
         setVotingButtons(ratings);
       }
+      else {
+        setVotingButtons(answerRatings())
+      }
+      setLoaded(true);
     }
-    loadCache();
-  }, []);
+    if (!loaded) loadCache();
+  }, [category.answers, gameState.event, answerRatings, loaded]);
 
 
   const handleVote = (rowID, answID, value) => {
@@ -65,7 +77,6 @@ const Voting = ({
   }
 
   const handleNextCategory = () => {
-    removeObject(keys.ratings);
     nextCategory();
     setVotingButtons(answerRatings());
   }

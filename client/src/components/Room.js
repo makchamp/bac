@@ -6,6 +6,8 @@ import { userSetChanged, connectRoom } from '../services/roomService';
 import {
   timerEvent,
   stateChangeEvent,
+  startEvent,
+  nextCategoryEvent,
   startGame,
   emitAnswer,
   emitNextCategory,
@@ -115,6 +117,10 @@ const Room = ({ userName, roomName }) => {
             if (payload.state !== gameStates.inRound) {
               setAnswers([]);
             }
+            if (payload.event === startEvent ||
+              payload.event === nextCategoryEvent) {
+              removeObject(keys.ratings);
+            }
             setGameState(payload);
           }
         });
@@ -159,7 +165,6 @@ const Room = ({ userName, roomName }) => {
   }
 
   const setGameStart = () => {
-    removeObject(keys.ratings);
     startGame(socket, {
       userName,
       roomName,
@@ -208,7 +213,7 @@ const Room = ({ userName, roomName }) => {
 
   return (
     <Grid container component="main" sx={{ height: '100vh' }} >
-      {loading ? <Loading/> :
+      {loading ? <Loading /> :
         <>
           <Grid item xs={12} sm={12} md={8}
             sx={{ maxHeight: '100vh', overflow: 'auto' }}>

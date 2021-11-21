@@ -45,6 +45,7 @@ module.exports = (io, socket, store) => {
     }
     setGameState(roomName, gameState);
     delete gameState.answers;
+    gameState.event = 'game:start';
     io.to(roomName).emit('game:stateChange', gameState);
     setRoundTimer(roomName, lengthOfRound);
   }
@@ -198,6 +199,7 @@ module.exports = (io, socket, store) => {
         state.state = 'inLobby';
       }
       setGameState(roomName, state);
+      state.event = 'game:nextCategory';
       io.to(roomName).emit('game:stateChange', state);
     });
   }
@@ -260,6 +262,7 @@ module.exports = (io, socket, store) => {
         }
       }
       setGameState(roomName, state);
+      state.event = 'game:vote';
       io.to(roomName).emit('game:stateChange', state);
     });
   }
