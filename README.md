@@ -2,8 +2,9 @@
 Scattegories
 
 ## Server 
-- Requirements Nodejs >=12, npm
-- Redis
+### Requirements 
+- Nodejs >=12, npm
+- Redis (or Docker)
 
 ### Install
 #### Node server
