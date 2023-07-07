@@ -8,14 +8,16 @@ const httpServer = require('http').createServer(app);
 const store = require('./store')(session);
 
 const {
-  PORT,
-  HOST,
   CLIENT_URL,
   SESSION_SECRET,
   CLIENT_BUILD_DIR,
 } = process.env;
+
+const HOST = process.env.HOST || 'localhost';
+const PORT = process.env.PORT || '4000'
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const clientPath = CLIENT_BUILD_DIR || '../client/build';
+
 
 const sessionMiddleware = session({
   store,
