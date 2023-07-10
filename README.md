@@ -7,12 +7,40 @@ Scattegories
 - Redis (or Docker)
 
 ### Install
-#### Node server
+
+## Client
+React app
+### Install
+```
+cd client
+npm i
+```
+
+### Setup build time environment variables 
+```
+cp .env.example .env
+# Fill .env or keep empty (uses default values)
+```
+
+### Build
+```
+npm run build
+# default server url serving build as static files http://localhost:4000
+```
+
+
+### Run development server
+```
+npm start
+# default standalone client url: http://localhost:3000
+```
+
+## Server
 ```
 cd server
 npm i
 ```
-#### Redis
+### Redis
 ```
 # With docker
 sudo docker pull redis
@@ -28,25 +56,5 @@ cp .env.example .env
 ### Run
 ```
 npm run dev
+# default server url serving client build http://localhost:4000 
 ```
-
-
-## Client
-React app
-### Install
-```
-cd client
-npm i
-```
-### Run
-```
-npm start
-# default standalone client url: http://localhost:3000
-```
-
-### Build
-```
-npm run build
-# default server url serving build as static files http://localhost:4000
-```
-

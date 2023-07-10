@@ -9,7 +9,6 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Room from './Room';
 import { putObject, fetchObject, keys } from '../services/cache';
-import axios from 'axios';
 import { Container } from '@mui/material';
 
 const RoomInputField = styled(Input)(() => ({
@@ -32,14 +31,6 @@ const ConnectRoom = () => {
     putObject(keys.user, { userName, roomName });
     navigate(`/room/${roomName}`);
   }
-
-  useEffect(() => {
-    // Used in development to set cross server session cookie
-    if (process.env.NODE_ENV === 'development') {
-      axios.get('/ping')
-        .catch(err => console.log(err));
-    }
-  }, []);
 
   useEffect(() => {
     const loadCache = () => {
