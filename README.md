@@ -1,60 +1,63 @@
-# bac
-Scattegories
+# Scattegories / Bac
 
-## Server 
+## Production
+
+### Install
+```
+# Move SSH Key into keys/
+# Move Git Keys and .env files into transfer/
+
+terraform apply --auto-approve
+ssh -i keys/key terraformUser@IP
+sudo ./PLaunch.sh
+
+# Set the Domain A record to point to the Instance IP
+```
+## Server Individually
 ### Requirements 
-- Nodejs >=12, npm
-- Redis (or Docker)
-
-### Install
-
-## Client
-React app
+- Docker
+- (Optional) Nodejs >=18 lts
 ### Install
 ```
-cd client
-npm i
-```
-
-### Setup build time environment variables 
-```
-cp .env.example .env
-# Fill .env or keep empty (uses default values)
-```
-
-### Build
-```
-npm run build
-# default server url serving build as static files http://localhost:4000
-```
-
-
-### Run development server
-```
-npm start
-# default standalone client url: http://localhost:3000
-```
-
-## Server
-```
-cd server
-npm i
+npm install --prefix /server/
 ```
 ### Redis
 ```
-# With docker
+# Example
 sudo docker pull redis
 sudo docker run -d -p 6379:6379 --name redis_bac redis
-# Restart after stop
-sudo docker start redis_bac
 ```
 ### Env
 ```
 cp .env.example .env
-# Fill .env or keep empty (uses default values)
+# Fill .env with personal values
 ```
-### Run
+### Run in Dev Mode
 ```
 npm run dev
-# default server url serving client build http://localhost:4000 
+# default server url = http://localhost:4000
+```
+### Run in Production Mode
+```
+npm run start | npm start
+# default server url = http://localhost:4000
+```
+## Client Individually
+### Install
+```
+npm install --prefix /client/
+```
+### Env
+```
+cp .env.example .env
+# Fill .env with personal values
+```
+### Build
+```
+npm run build
+```
+### Run Client Server
+```
+npm run start | npm start
+# default standalone client url: http://localhost:3001
 ```
