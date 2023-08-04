@@ -1,0 +1,17 @@
+# Python Virtual Environment
+env/
+
+# Any Transferable files
+deployment/transfer/*
+
+# Any Key Pairs Generated
+deployment/keys/*
+
+# Terraform Generated Files
+deployment/.terraform/*
+deployment/*.tfstate*
+deployment/.terraform.lock.hcl
+deployment/instance_ip.txt
+
+# All Vagrant Generated Files
+development/.vagrant/*
