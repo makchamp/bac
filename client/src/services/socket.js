@@ -1,9 +1,10 @@
 import React from 'react';
 import io from 'socket.io-client'
 
-const SERVER = process.env.REACT_APP_HOST || 'http://localhost:4000';
+const { REACT_APP_HOST_PROTOCOL, REACT_APP_HOST_DOMAIN, REACT_APP_HOST_PORT } = process.env;
+const HOST = `${REACT_APP_HOST_PROTOCOL}://${REACT_APP_HOST_DOMAIN}:${REACT_APP_HOST_PORT}`;
 
-const socket = io(SERVER, {
+const socket = io(HOST, {
   withCredentials: true,
 });
 const SocketContext = React.createContext();
