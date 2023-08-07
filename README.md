@@ -19,7 +19,7 @@ sudo ./PLaunch.sh
 - (Optional) Nodejs >=18 lts
 ### Install
 ```
-npm install --prefix /server/
+npm install --prefix ./server/
 ```
 ### Redis
 ```
