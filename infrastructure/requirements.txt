@@ -1,5 +1,0 @@
-Fabric3==1.14.post1
-paramiko==2.12.0
-python-terraform==0.10.1
-python-vagrant==1.0.0
-colorama==0.4.6
