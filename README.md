@@ -7,9 +7,8 @@
 # Move SSH Key into keys/
 # Move Git Keys and .env files into transfer/
 
-terraform apply --auto-approve
-ssh -i keys/key terraformUser@IP
-sudo ./PLaunch.sh
+cd infrastructure
+python/python3 launchScript.py -t both -i both -l prod -s both
 
 # Set the Domain A record to point to the Instance IP
 ```
