@@ -68,7 +68,7 @@
         key_file: /home/ubuntu/.ssh/id_rsa
         accept_hostkey: yes
         force: yes
-        version: deployment
+        version: script_automation
     
     - name: Copying Client .ENV
       copy:
