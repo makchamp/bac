@@ -1,4 +1,6 @@
-module.exports = (io, socket, store) => {
+import { RoomState } from '../models/RoomState.enum';
+
+export default function registerRoomHandlers(io, socket, store) {
   const { sessionID, session } = socket.request;
   const socketID = socket.id;
 
@@ -26,7 +28,7 @@ module.exports = (io, socket, store) => {
           store.client.hset(
             roomName,
             'gameState',
-            JSON.stringify({ state: 'inLobby' })
+            JSON.stringify({ state: RoomState.Lobby })
           );
         }
         notifyUserSetChanged(roomName, users);
@@ -44,6 +46,7 @@ module.exports = (io, socket, store) => {
     // Update client with room info
     if (!users) return;
     const userList = Object.keys(users).map((key) => ({
+      userID: key,
       userName: users[key].userName,
       isHost: users[key].isHost,
       inRoom: users[key].socketID ? true : false,
@@ -79,4 +82,4 @@ module.exports = (io, socket, store) => {
 
   socket.on('room:join', joinRoom);
   socket.on('disconnecting', leaveRoom);
-};
+}
