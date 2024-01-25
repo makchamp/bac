@@ -1,7 +1,8 @@
 const { nanoid } = require('nanoid/non-secure');
+import { RoomState } from '../models/RoomState.enum';
 
-module.exports = (io, socket, store) => {
-  const { sessionID, session } = socket.request;
+export default function registerGameHandlers(io, socket, store) {
+  const { sessionID, session } = socket.request; // sessionID === userID
 
   const startGame = (payload) => {
     const { userName, roomName, gameSettings, categories } = payload;
@@ -15,34 +16,54 @@ module.exports = (io, socket, store) => {
     } = gameSettings;
 
     store.client.hset(roomName, 'gameSettings', JSON.stringify(gameSettings));
-    const selectedCategories = selectCategories(
-      categories,
-      numOfCategories,
-      letters,
-      letterRotation,
-      numOfRounds
-    );
-    store.client.hset(
-      roomName,
-      'categories',
-      JSON.stringify(selectedCategories)
-    );
-
-    let gameState = {
-      state: 'inRound',
+    const gameState = {
+      state: RoomState.Round,
       currentRound: 0,
       numOfRounds,
       lengthOfRound,
-      categories: selectedCategories,
+      categories: [],
       letterRotation,
       multiScoring,
+      players: {},
       answers: {},
+      event: 'game:start',
     };
-    setGameState(roomName, gameState);
-    delete gameState.answers;
-    gameState.event = 'game:start';
-    io.to(roomName).emit('game:stateChange', gameState);
-    setRoundTimer(roomName, lengthOfRound);
+
+    store.client.hget(roomName, 'users', (err, roomUsers) => {
+      if (roomUsers) {
+        // Setup players, categories and answers/scores table
+        gameState.players = JSON.parse(roomUsers);
+        gameState.categories = selectCategories(
+          categories,
+          numOfCategories,
+          letters,
+          letterRotation,
+          numOfRounds
+        );
+        initAnswersTable(gameState);
+        setGameState(roomName, gameState);
+        io.to(roomName).emit('game:stateChange', gameState);
+        setRoundTimer(roomName, lengthOfRound);
+      }
+    });
+  };
+
+  const initAnswersTable = (gameState) => {
+    for (const playerId in gameState.players) {
+      const numOfCategories =
+        gameState.categories[gameState.currentRound].length;
+      gameState.answers[playerId] = {
+        answers: Array.from(Array(gameState.numOfRounds), () =>
+          new Array(numOfCategories)
+            .fill(null)
+            .map(() => ({ answID: nanoid(12) }))
+        ),
+        scores: {
+          rounds: Array(gameState.numOfRounds).fill(0),
+          total: 0,
+        },
+      };
+    }
   };
 
   const setRoundTimer = (roomName, lengthOfRound) => {
@@ -76,6 +97,9 @@ module.exports = (io, socket, store) => {
         store.client.hget(roomName, 'gameState', (error, gameState) => {
           let gs = JSON.parse(gameState);
           compileAnswers(roomName, gs);
+          gs.state = RoomState.Voting;
+          gs.currentCategory = 0;
+
           io.to(roomName).emit('game:stateChange', gs);
           setGameState(roomName, gs);
         });
@@ -100,16 +124,15 @@ module.exports = (io, socket, store) => {
     const activeLetters = Object.keys(letters).flatMap((letter) =>
       letters[letter].isActive ? [letter] : []
     );
-    const selectedCategories = selectRandomCategories(
-      activeCategories,
-      numOfCategories
-    );
-    let selectedLetter = selectRandomLetter(activeLetters);
 
+    let selectedLetter = selectRandomLetter(activeLetters);
     const res = new Array(numOfRounds);
     for (let i = 0; i < res.length; i++) {
+      const selectedCategories = selectRandomCategories(
+        activeCategories,
+        numOfCategories
+      );
       const ctgs = new Array(numOfCategories);
-      selectedLetter = selectRandomLetter(activeLetters);
       for (let j = 0; j < numOfCategories; j++) {
         const letter = letterRotation
           ? selectRandomLetter(activeLetters)
@@ -121,7 +144,6 @@ module.exports = (io, socket, store) => {
       }
       res[i] = ctgs;
     }
-
     return res;
   };
 
@@ -148,17 +170,8 @@ module.exports = (io, socket, store) => {
     store.client.hget(roomName, 'gameState', (error, gameState) => {
       try {
         const state = JSON.parse(gameState);
-        const { currentRound, numOfRounds, answers, categories } = state;
-
-        if (!answers[sessionID]) {
-          const numOfCategories = categories[currentRound].length;
-          answers[sessionID] = Array.from(Array(numOfRounds), () =>
-            new Array(numOfCategories)
-              .fill(null)
-              .map(() => ({ answID: nanoid(12) }))
-          );
-        }
-        answers[sessionID][currentRound][index].answ = value;
+        const { currentRound, answers } = state;
+        answers[sessionID].answers[currentRound][index].answ = value;
         setGameState(roomName, state);
       } catch (error) {
         console.error(error);
@@ -172,13 +185,11 @@ module.exports = (io, socket, store) => {
     categories[currentRound].forEach((category, index) => {
       const categoryAns = [];
       users.forEach((user) => {
-        const ans = answers[user][currentRound][index];
+        const ans = answers[user].answers[currentRound][index];
         categoryAns.push(ans);
       });
       category.answers = categoryAns;
     });
-    state.state = 'inVoting';
-    state.currentCategory = 0;
     io.to(roomName).emit('game:stateChange', state);
     setGameState(roomName, state);
   };
@@ -187,14 +198,17 @@ module.exports = (io, socket, store) => {
     const { roomName } = payload;
     store.client.hget(roomName, 'gameState', (error, gameState) => {
       const state = JSON.parse(gameState);
-      const { currentRound, currentCategory, categories } = state;
+      const { currentRound, currentCategory, categories, answers } = state;
+
       if (currentCategory < categories[currentRound].length - 1) {
         state.currentCategory++;
+        state.event = 'game:nextCategory';
+        RoomState.Round;
       } else {
-        state.state = 'inLobby';
+        state.currentCategory = 0;
+        state.state = RoomState.PostRound;
       }
       setGameState(roomName, state);
-      state.event = 'game:nextCategory';
       io.to(roomName).emit('game:stateChange', state);
     });
   };
@@ -231,15 +245,21 @@ module.exports = (io, socket, store) => {
     const { roomName, answID, vote } = payload;
     store.client.hget(roomName, 'gameState', (error, gameState) => {
       const state = JSON.parse(gameState);
-      const { currentRound, currentCategory, categories, answers } = state;
+      const {
+        currentRound,
+        currentCategory,
+        categories,
+        answers,
+        numOfRounds,
+      } = state;
 
       const ctg = categories[currentRound][currentCategory];
 
       const playerAnswers = Object.keys(answers);
       for (let i = 0; i < playerAnswers.length; i++) {
         const playerID = playerAnswers[i];
-        const answer = answers[playerID][currentRound][currentCategory];
-        if (sessionID !== playerID && answer.answID === answID) {
+        const answer = answers[playerID].answers[currentRound][currentCategory];
+        if (sessionID !== playerID && answer.answID === answID && answer.answ) {
           if (vote.label === 'upvote') {
             answer.upvotes = castVote(answer.upvotes);
             answer.downvotes = unCastVote(answer.downvotes);
@@ -249,10 +269,10 @@ module.exports = (io, socket, store) => {
           }
 
           const idx = ctg.answers.findIndex((ans) => ans.answID === answID);
-          ctg.answers[idx].score = tallyAnswer(
-            answer.upvotes,
-            answer.downvotes
-          );
+          const score = tallyAnswer(answer.upvotes, answer.downvotes);
+          ctg.answers[idx].score = score;
+          answer.score = score;
+          sumPlayerRoundScores(answers, playerID, currentRound);
           break;
         }
       }
@@ -262,8 +282,43 @@ module.exports = (io, socket, store) => {
     });
   };
 
+  function sumPlayerRoundScores(answersTable, playerID, currentRound) {
+    let score = 0;
+    answersTable[playerID].answers[currentRound].forEach((ans, idx) => {
+      if (ans.score) {
+        score += ans.score;
+      }
+    });
+    answersTable[playerID].scores.rounds[currentRound] = score;
+    // sum total score
+    answersTable[playerID].scores.total = answersTable[
+      playerID
+    ].scores.rounds.reduce((a, b) => a + b, 0);
+  }
+
+  const nextRound = (payload) => {
+    const { roomName } = payload;
+    store.client.hget(roomName, 'gameState', (error, gameState) => {
+      const state = JSON.parse(gameState);
+      const { currentRound, numOfRounds } = state;
+      if (currentRound < numOfRounds - 1) {
+        state.currentRound++;
+        state.state = RoomState.Round;
+      } else {
+        state.state = RoomState.Lobby;
+      }
+      setGameState(roomName, state);
+      state.event = 'game:nextRound';
+      io.to(roomName).emit('game:stateChange', state);
+      if (state.state === RoomState.Round) {
+        setRoundTimer(roomName, state.lengthOfRound);
+      }
+    });
+  };
+
   socket.on('game:start', startGame);
   socket.on('game:answer', handleAnswer);
   socket.on('game:nextCategory', nextCategory);
+  socket.on('game:nextRound', nextRound);
   socket.on('game:vote', hanldeVote);
-};
+}
