@@ -4,9 +4,10 @@ import Input from '@mui/material/Input';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
 import logo from '../logo.svg';
 import { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import Room from './Room';
 import { putObject, fetchObject, keys } from '../services/cache';
 import { Container } from '@mui/material';
@@ -23,13 +24,17 @@ const RoomInputField = styled(Input)(() => ({
 const ConnectRoom = () => {
   const [userName, setUserName] = useState('');
   const [roomName, setRoomName] = useState('');
+  
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [uiMsg, setUIMessage] = useState(location.state ? location.state.uiMessage : undefined);
 
   function HandleSubmit(e) {
     e.preventDefault();
 
     putObject(keys.user, { userName, roomName });
-    navigate(`/room/${roomName}`);
+    navigate(`/room/${roomName}`, { replace: true });
   }
 
   useEffect(() => {
@@ -41,7 +46,8 @@ const ConnectRoom = () => {
       }
     };
     loadCache();
-  }, []);
+    setUIMessage(location.state ? location.state.uiMessage : undefined);
+  }, [location.state]);
 
   return (
     <Box component="main">
@@ -49,10 +55,9 @@ const ConnectRoom = () => {
       <Routes>
         <Route
           path="room/:roomName"
-          element={<Room userName={userName} roomName={roomName}></Room>}
+          element={<Room userName={userName}></Room>}
         />
-
-        <Route index element={
+        <Route index path="/*" element={
           <Container>
             <Box
               sx={{
@@ -107,6 +112,13 @@ const ConnectRoom = () => {
                   </Button>
                 </Box>
               </Box>
+              {uiMsg && (uiMsg.isError ? 
+              <Alert sx={{m: 2}} severity="error">
+                {uiMsg.message}
+              </Alert> :
+              <Alert sx={{m: 2}} severity="info">
+                {uiMsg.message}
+              </Alert>)}
             </Box>
           </Container>
         } />

@@ -42,7 +42,7 @@ export default function registerGameHandlers(io, socket, store) {
         );
         initAnswersTable(gameState);
         setGameState(roomName, gameState);
-        io.to(roomName).emit('game:stateChange', gameState);
+        emitGameState(roomName, gameState);
         setRoundTimer(roomName, lengthOfRound);
       }
     });
@@ -100,8 +100,8 @@ export default function registerGameHandlers(io, socket, store) {
           gs.state = RoomState.Voting;
           gs.currentCategory = 0;
 
-          io.to(roomName).emit('game:stateChange', gs);
           setGameState(roomName, gs);
+          emitGameState(roomName, gs);
         });
       }
     });
@@ -110,6 +110,10 @@ export default function registerGameHandlers(io, socket, store) {
   const setGameState = (roomName, state) => {
     store.client.hset(roomName, 'gameState', JSON.stringify(state));
   };
+
+  const emitGameState = (roomName, state) => {
+    io.to(roomName).emit('game:stateChange', state);
+  }
 
   const selectCategories = (
     categories,
@@ -190,7 +194,7 @@ export default function registerGameHandlers(io, socket, store) {
       });
       category.answers = categoryAns;
     });
-    io.to(roomName).emit('game:stateChange', state);
+    emitGameState(roomName, state);
     setGameState(roomName, state);
   };
 

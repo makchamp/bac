@@ -1,5 +1,7 @@
 import { RoomState } from '../models/RoomState.enum';
 
+const MAX_ROOM_SIZE = 10;
+
 export default function registerRoomHandlers(io, socket, store) {
   const { sessionID, session } = socket.request;
   const socketID = socket.id;
@@ -13,6 +15,15 @@ export default function registerRoomHandlers(io, socket, store) {
         let users;
         if (roomUsers) {
           users = JSON.parse(roomUsers);
+          if (
+            Object.keys(users).length === MAX_ROOM_SIZE &&
+            !users[sessionID]
+          ) {
+            return notifyUser(
+              'user:JoinRoomError:RoomFull',
+              `Reached max number of users in room '${roomName}'`
+            );
+          }
           users[sessionID] = {
             userName,
             socketID,
@@ -31,15 +42,19 @@ export default function registerRoomHandlers(io, socket, store) {
             JSON.stringify({ state: RoomState.Lobby })
           );
         }
-        notifyUserSetChanged(roomName, users);
         store.client.hset(roomName, 'users', JSON.stringify(users));
         store.get(sessionID, (error, session) => {
           if (session) {
             store.set(sessionID, { ...session, room: roomName });
           }
         });
+        notifyUserSetChanged(roomName, users);
       });
     }
+  };
+
+  const notifyUser = (event, msg) => {
+    socket.emit(event, msg);
   };
 
   const notifyUserSetChanged = (roomName, users) => {

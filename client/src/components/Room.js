@@ -2,7 +2,12 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import { useContext, useState, useEffect } from 'react';
 import { SocketContext } from '../services/socket';
-import { userSetChanged, connectRoom } from '../services/roomService';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  userSetChanged,
+  roomFullError,
+  connectRoom,
+} from '../services/roomService';
 import {
   timerEvent,
   stateChangeEvent,
@@ -23,19 +28,55 @@ import { putObject, removeObject, fetchObject, keys } from '../services/cache';
 import PostRound from './PostRound';
 import Voting from './Voting';
 import Loading from './Loading';
+import { UIMessage } from '../models/UIMessage';
+import {
+  uniqueNamesGenerator,
+  adjectives,
+  animals,
+} from 'unique-names-generator';
 
-const Room = ({ userName, roomName }) => {
+const Room = ({username}) => {
   const socket = useContext(SocketContext);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const params = useParams();
 
   const [users, setUsers] = useState([]);
-  const [room, setRoom] = useState(roomName);
+  const [roomName, setRoomName] = useState('');
+  const [userName, setUserName] = useState(username);
+
   useEffect(() => {
-    if (userName && roomName) {
+    const initRoom = () => {
       setLoading(true);
-      connectRoom(socket, { userName, roomName });
-    }
-  }, [socket, userName, roomName]);
+      const room = params.roomName;
+      if (!room) {
+        return navigate('/', { replace: true });
+      }
+      setRoomName(room);
+      
+      let usrName = username;
+      if (!usrName) {
+        const user = fetchObject(keys.user);
+        if (!user?.userName) {
+          // If no user create one with random name
+          usrName = uniqueNamesGenerator({
+            dictionaries: [adjectives, animals],
+            separator: ' ',
+            style: 'capital',
+          });
+          putObject(keys.user, { usrName, room });
+        } else {
+          usrName = user.userName;
+        }
+        setUserName(username);
+      }
+      if (!connectRoom(socket, { userName: usrName, roomName: room })) {
+        return navigate('/', { replace: true });
+      };
+    };
+
+    initRoom();
+  }, [socket, username, roomName, params.roomName, navigate]);
 
   const [timer, setTimer] = useState('');
   const gameStates = {
@@ -96,7 +137,7 @@ const Room = ({ userName, roomName }) => {
         if (mounted) {
           const { users, room, gameState } = payload;
           setUsers(users ? users : []);
-          setRoom(room ? room : '');
+          setRoomName(room ? room : '');
           setGameState(gameState);
           setLoading(false);
         }
@@ -126,6 +167,23 @@ const Room = ({ userName, roomName }) => {
       });
     };
 
+    const handleRoomFullError = () => {
+      socket.on(roomFullError, (payload) => {
+        if (mounted) {
+          navigate('/', {
+            replace: true,
+            state: {
+              uiMessage: new UIMessage(
+                true,
+                `Room '${roomName}' is full ! Please join another room.`
+              ),
+            },
+          });
+        }
+      });
+    };
+    handleRoomFullError();
+
     setUserChangeSocket();
     setGameTimer();
     setGameStateListener();
@@ -139,6 +197,8 @@ const Room = ({ userName, roomName }) => {
     gameStates.Round,
     gameStates.PostRound,
     gameStates.Voting,
+    roomName,
+    navigate,
   ]);
 
   const resetGameSettings = () => {
@@ -253,7 +313,7 @@ const Room = ({ userName, roomName }) => {
               </Button>
             )}
           </Grid>
-          <PlayerList users={users} roomName={room}></PlayerList>
+          <PlayerList users={users} roomName={roomName}></PlayerList>
         </>
       )}
     </Grid>
