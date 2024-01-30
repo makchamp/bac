@@ -7,8 +7,6 @@ services:
       - "3001:3001"
     networks:
       - bac
-    volumes:
-      - vol_client:/usr/src/scattegories/
   server:
     container_name: bac_server
     build:
@@ -19,8 +17,6 @@ services:
       - redis
     networks:
       - bac
-    volumes:
-      - vol_server:/usr/src/scattegories/
   redis:
     container_name: bac_redis
     image: "redis"
@@ -28,12 +24,6 @@ services:
       - "6379:6379"
     networks:
       - bac
-
-volumes:
-  vol_client:
-    external: false
-  vol_server:
-    external: false
 
 networks:
   bac:
