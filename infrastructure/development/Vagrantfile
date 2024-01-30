@@ -8,8 +8,10 @@ Vagrant.configure("2") do |config|
     # General
     main.vm.box = "generic/ubuntu2204"
     main.vm.hostname = "server"
-    main.vm.synced_folder "../deployment/transfer", "/transfer"
-    main.vm.synced_folder "../deployment/keys", "/keys"
+    main.vm.synced_folder "../deployment/transfer", "/transfer/deployment"
+    main.vm.synced_folder "./transfer", "/transfer/development"
+    main.vm.synced_folder "../deployment/keys", "/keys/deployment"
+    main.vm.synced_folder "./keys", "/keys/development"
   
     # Networking
     main.vm.network "private_network", ip: "192.168.33.223"
