@@ -1,0 +1,33 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup GitHub Actions
+      uses: actions/checkout@v4
+    
+    - name: Setup NodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+        
+    - name: Build & Test Client
+      working-directory: ./client
+      run:
+        npm install
+        npm run build
+        npm test
+
+    - name: Build & Test Server
+      working-directory: ./server
+      run:
+        npm ci
+        npm test
