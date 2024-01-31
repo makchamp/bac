@@ -64,7 +64,7 @@ const Room = ({username}) => {
             separator: ' ',
             style: 'capital',
           });
-          putObject(keys.user, { usrName, room });
+          putObject(keys.user, { userName: usrName, roomName: room });
         } else {
           usrName = user.userName;
         }
