@@ -1,0 +1,59 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  client:
+    name: Client
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup GitHub Actions
+      uses: actions/checkout@v4
+    
+    - name: Setup NodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+        
+    - name: Install Packages
+      id: installation
+      working-directory: ./client
+      run:
+        npm install
+    
+    - name: Build Client
+      id: build
+      working-directory: ./client
+      if: steps.installation.outcome == 'success'
+      run:
+        npm run build
+    
+    - name: Test Client
+      working-directory: ./client
+      if: steps.build.outcome == 'success'
+      run:
+        npm test
+
+  server:
+    name: Server
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup GitHub Actions
+      uses: actions/checkout@v4
+    
+    - name: Setup NodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+
+    - name: Build Server
+      id: build
+      working-directory: ./server
+      run:
+        npm ci

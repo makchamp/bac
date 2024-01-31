@@ -1,0 +1,140 @@
+- name: Provisioning Jenkins Server
+  connection: ansible.netcommon.network_cli
+  hosts: servers
+  become: true
+  tasks:
+    - name: Saving Temporary Files
+      become: true
+      copy:
+        src: /transfer/development/
+        dest: /home/ubuntu/transfer/
+        remote_src: false
+        mode: 0600
+
+    - name: Installing Initial System Packages
+      apt:
+        state: latest
+        update_cache: yes
+        upgrade: 'yes'
+
+    - name: Rebooting System
+      shell: sleep 10 && /sbin/shutdown -r now 'Rebooting box to update system libs/kernel as needed' 
+      args:
+        removes: /var/run/reboot-required
+      async: 300
+      poll: 2
+      ignore_errors: true
+     
+    - name: Waiting for Reconnection
+      wait_for_connection:
+        delay: 10
+        timeout: 60
+
+    - name: Adding Docker GPG Apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Adding Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+    
+    - name: Installing Additional Required Packages
+      apt:
+        pkg:
+          - docker-ce
+          - pip
+          - haveged
+        state: latest
+        update_cache: yes
+    
+    - name: Installing Docker Compose Module
+      pip:
+        name: docker-compose
+        state: latest
+
+    - name: Copying Private Key to SSH Directory
+      copy:
+        src: /home/ubuntu/transfer/id_rsa
+        dest: /home/ubuntu/.ssh/id_rsa
+        remote_src: true
+        mode: 0600
+
+    - name: Cloning Repository
+      git:
+        repo: git@github.com:makchamp/bac.git
+        dest: /home/ubuntu/bac
+        key_file: /home/ubuntu/.ssh/id_rsa
+        accept_hostkey: yes
+        force: yes
+        version: jenkins_pipeline
+    
+    - name: Fixing Local Repository Permissions
+      become: true
+      file:
+        path: /home/ubuntu/bac
+        owner: ubuntu
+        group: ubuntu
+    
+    - name: Starting Docker Service
+      become: true
+      service:
+        name: docker
+        state: started
+    
+    - name: Creating Jenkins Network
+      docker_network:
+        name: jenkins_network
+        state: present
+
+    - name: Creating Jenkins Certification Volume
+      docker_volume:
+        name: jenkins-docker-certs
+        state: present
+
+    - name: Creating Jenkins Data Volume
+      docker_volume:
+        name: jenkins-data
+        state: present
+
+    - name: Launching Jenkins Docker Container
+      docker_container:
+        name: jenkins-docker
+        image: "docker:dind"
+        pull: true
+        state: started
+        detach: true
+        privileged: true
+        env:
+          DOCKER_TLS_CERTDIR: "/certs"
+        networks:
+          - name: jenkins_network
+            aliases: docker
+        ports:
+          - "2376:2376"
+        volumes:
+        - jenkins-docker-certs:/certs/client
+        - jenkins-data:/var/jenkins_home
+    
+    - name: Launching Jenkins Container
+      docker_container:
+        name: jenkins
+        image: "jenkins/jenkins:lts-jdk11"
+        pull: true
+        state: started
+        detach: true
+        privileged: true
+        restart_policy: "on-failure"
+        env:
+          DOCKER_HOST: "tcp://docker:2376"
+          DOCKER_CERT_PATH: "/certs/client"
+          DOCKER_TLS_VERIFY: "1"
+        networks:
+          - name: jenkins_network
+        ports:
+          - "8080:8080"
+          - "50000:50000"
+        volumes:
+        - jenkins-docker-certs:/certs/client:ro
+        - jenkins-data:/var/jenkins_home

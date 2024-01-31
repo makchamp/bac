@@ -1,0 +1,30 @@
+// env.DOCKER_HOST = 'tcp://<docker_server_ip>:<port>'
+
+pipeline {
+    agent none
+
+    stages {
+
+        stage('Cloning Repository') {
+            agent any
+            steps {
+              git url: 'https://github.com/makchamp/bac', branch: 'master'
+            }
+        }
+
+        stage('Building Client') {
+            agent{
+                // Equivalent to "docker build -f Dockerfile.build --build-arg version=1.0.2 ./build/
+                dockerfile {
+                    filename 'Dockerfile'
+                    dir 'client'
+                    additionalBuildArgs  "--build-arg version=${env.BUILD_ID}"
+                    args '-v /tmp:/tmp'
+                }
+            }
+            steps {
+                echo 'Building Client YEET!'
+            }
+        }
+    }
+}
