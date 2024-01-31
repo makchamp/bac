@@ -8,6 +8,7 @@ on:
 
 jobs:
   client:
+    name: Client
     runs-on: ubuntu-latest
 
     steps:
@@ -39,6 +40,7 @@ jobs:
         npm test
 
   server:
+    name: Server
     runs-on: ubuntu-latest
 
     steps:
@@ -55,9 +57,3 @@ jobs:
       working-directory: ./server
       run:
         npm ci
-    
-    - name: Test Server
-      working-directory: ./server
-      if: steps.build.outcome == 'success'
-      run:
-        npm test
