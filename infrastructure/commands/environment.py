@@ -7,14 +7,13 @@ class Environment(ScriptCommand):
     def __init__(self):
         self.name = "environment"
         self.help_message = "used to initialize/modify any environment files"
-        self.choices = ["prod", "jenkins", "vm", "all"]
+        self.choices = ["setup_env"]
         self.argument = {
             "dest": "selection",
             "nargs": "+",
             "type": str,
-            "choices": ["setup_env"],
             "metavar": "options",
-            "help": "d"
+            "help": "setup_env"
         }
 
     def command(self, *args: str) -> None:

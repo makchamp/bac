@@ -39,7 +39,7 @@ class Launch(ScriptCommand):
 
         stdin.write('cd /home/vagrant/bac/infrastructure' + '\n')
         stdin.write('git pull origin' + '\n')
-        self.enter_timed_commands(stdin, 'python3 launchScript.py -d')
+        self.enter_timed_commands(stdin, 'python3 launchScript.py environment setup_env')
         self.enter_timed_commands(stdin, '')
         self.enter_timed_commands(stdin, '')
         self.enter_timed_commands(stdin, '')
