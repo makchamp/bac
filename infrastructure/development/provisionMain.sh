@@ -54,7 +54,7 @@ echo "============================================"
 echo ""
 
 apt install virtualbox -y
-wget -p /tmp/ https://releases.hashicorp.com/vagrant/2.3.7/vagrant_2.3.7-1_amd64.deb
+wget -P /tmp/ https://releases.hashicorp.com/vagrant/2.3.7/vagrant_2.3.7-1_amd64.deb
 apt install /tmp/vagrant_2.3.7-1_amd64.deb -y
 
 echo ""
