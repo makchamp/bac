@@ -79,9 +79,7 @@ sudo -u vagrant bash -c '
   eval `ssh-agent`; \
   ssh-add; \
   git clone git@github.com:makchamp/bac.git /home/vagrant/bac; \
-  cd /home/vagrant/bac; \
-  git checkout jenkins_pipeline; \
-  cd infrastructure; \
+  cd /home/vagrant/bac/infrastructure; \
   pip3 install -r requirements.txt; \
 '
 
