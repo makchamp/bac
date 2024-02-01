@@ -37,7 +37,7 @@ jobs:
       working-directory: ./client
       if: steps.build.outcome == 'success'
       run:
-        npm test
+        npm test -- --watchAll=false
 
   server:
     name: Server

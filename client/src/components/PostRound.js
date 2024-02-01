@@ -61,7 +61,7 @@ const PostRound = ({ gameState, users, nextRound }) => {
       setTableData(sortTableScores(td));
     };
     initTable();
-  }, []);
+  }, [gameState.answers, gameState.currentRound, gameState.players]);
 
   const isFinalRound = () => {
     return gameState.currentRound === gameState.numOfRounds - 1;

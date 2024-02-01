@@ -1,8 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+//@ts-ignore
+window.setImmediate = window.setTimeout
+
+test('renders index', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  const element = screen.getByText(/Room/i);
+  expect(element).toBeInTheDocument();
 });

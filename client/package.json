@@ -21,12 +21,13 @@
     "react-router-dom": "^6.2.1",
     "react-window": "^1.8.9",
     "socket.io-client": "^4.7.4",
+    "unique-names-generator": "^4.7.1",
     "web-vitals": "^2.1.2"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@testing-library/jest-dom": "^5.16.1",
-    "@testing-library/react": "^12.1.2",
+    "@testing-library/jest-dom": "^6.4.1",
+    "@testing-library/react": "^12.1.5",
     "prettier": "3.0.1",
     "react-scripts": "5.0.1",
     "serve": "^14.2.1"

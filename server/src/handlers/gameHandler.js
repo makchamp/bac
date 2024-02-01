@@ -1,8 +1,17 @@
 const { nanoid } = require('nanoid/non-secure');
 import { RoomState } from '../models/RoomState.enum';
+import { StoreTimer } from '../models/StoreTimer';
 
 export default function registerGameHandlers(io, socket, store) {
   const { sessionID, session } = socket.request; // sessionID === userID
+
+  const roundTimer = new StoreTimer(
+    store,
+    'roundIntervalId',
+    'roundTime',
+    io,
+    'game:timer'
+  );
 
   const startGame = (payload) => {
     const { userName, roomName, gameSettings, categories } = payload;
@@ -42,7 +51,7 @@ export default function registerGameHandlers(io, socket, store) {
         );
         initAnswersTable(gameState);
         setGameState(roomName, gameState);
-        io.to(roomName).emit('game:stateChange', gameState);
+        emitGameState(roomName, gameState);
         setRoundTimer(roomName, lengthOfRound);
       }
     });
@@ -67,48 +76,25 @@ export default function registerGameHandlers(io, socket, store) {
   };
 
   const setRoundTimer = (roomName, lengthOfRound) => {
-    const interval = setInterval(roundIntervalHandler, 1000, roomName);
-    setRoundTimeout(roomName, interval);
-    store.client.hset(roomName, 'roundTime', lengthOfRound);
-  };
+    roundTimer.setIntervalTimer(roomName, lengthOfRound, (roomName) => {
+      store.client.hget(roomName, 'gameState', (error, gameState) => {
+        let gs = JSON.parse(gameState);
+        compileAnswers(roomName, gs);
+        gs.state = RoomState.Voting;
+        gs.currentCategory = 0;
 
-  const clearRoundTimeout = (roomName) => {
-    store.client.hget(roomName, 'roundTimeoutId', (error, roundTimeout) => {
-      if (roundTimeout) clearInterval(roundTimeout);
-    });
-  };
-
-  const setRoundTimeout = (roomName, timeout) => {
-    clearRoundTimeout(roomName);
-    store.client.hset(
-      roomName,
-      'roundTimeoutId',
-      timeout[Symbol.toPrimitive]()
-    );
-  };
-
-  const roundIntervalHandler = (roomName) => {
-    store.client.hget(roomName, 'roundTime', (error, time) => {
-      let counter = parseInt(time);
-      io.to(roomName).emit('game:timer', counter--);
-      store.client.hset(roomName, 'roundTime', counter);
-      if (counter < 0) {
-        clearRoundTimeout(roomName);
-        store.client.hget(roomName, 'gameState', (error, gameState) => {
-          let gs = JSON.parse(gameState);
-          compileAnswers(roomName, gs);
-          gs.state = RoomState.Voting;
-          gs.currentCategory = 0;
-
-          io.to(roomName).emit('game:stateChange', gs);
-          setGameState(roomName, gs);
-        });
-      }
+        setGameState(roomName, gs);
+        emitGameState(roomName, gs);
+      });
     });
   };
 
   const setGameState = (roomName, state) => {
     store.client.hset(roomName, 'gameState', JSON.stringify(state));
+  };
+
+  const emitGameState = (roomName, state) => {
+    io.to(roomName).emit('game:stateChange', state);
   };
 
   const selectCategories = (
@@ -190,7 +176,7 @@ export default function registerGameHandlers(io, socket, store) {
       });
       category.answers = categoryAns;
     });
-    io.to(roomName).emit('game:stateChange', state);
+    emitGameState(roomName, state);
     setGameState(roomName, state);
   };
 
