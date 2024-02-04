@@ -72,19 +72,19 @@
     
     - name: Copying Client .ENV
       copy:
-        src: /home/ubuntu/transfer/client.env
+        src: /home/ubuntu/transfer/deployment/client.env
         dest: /home/ubuntu/bac/client/.env
         remote_src: true
 
     - name: Copying Server .ENV
       copy:
-        src: /home/ubuntu/transfer/server.env
+        src: /home/ubuntu/transfer/deployment/server.env
         dest: /home/ubuntu/bac/server/.env
         remote_src: true
     
     - name: Copying Docker .ENV
       copy:
-        src: /home/ubuntu/transfer/docker.env
+        src: /home/ubuntu/transfer/deployment/docker.env
         dest: /home/ubuntu/bac/infrastructure/.env
         remote_src: true
 
