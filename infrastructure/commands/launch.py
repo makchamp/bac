@@ -27,33 +27,19 @@ class Launch(ScriptCommand):
                 self.run_jenkins_playbook()
                 ssh_disconnect()
 
-    def enter_timed_commands(self, stdin: paramiko.ChannelFile, command: str) -> None:
-        stdin.write(f"{command}\n")
-        stdin.flush()
-        time.sleep(3)
-
     def run_application_locally(self, session_secret: str) -> None:
-        channel = ssh.invoke_shell()
-        stdin = channel.makefile('wb')
-        stdout = channel.makefile('rb')
-
-        stdin.write('cd /home/vagrant/bac/infrastructure' + '\n')
-        stdin.write('git pull origin' + '\n')
-        self.enter_timed_commands(stdin, 'python3 launchScript.py environment setup_env')
-        self.enter_timed_commands(stdin, '')
-        self.enter_timed_commands(stdin, '')
-        self.enter_timed_commands(stdin, '')
-        self.enter_timed_commands(stdin, HOST)
-        self.enter_timed_commands(stdin, session_secret)
-        stdin.write('exit' + '\n')
-        stdin.flush()
-
-        colorama.init(convert=True, autoreset=True)
-        lines = stdout.readlines()
-        for line in lines:
-            print(fix_ansi(str(line)))
-
-        channel.close()
+        script = [
+            'cd /home/vagrant/bac/infrastructure',
+            'git pull origin',
+            'python3 launchScript.py environment setup_env',
+            '',
+            '',
+            '',
+            HOST,
+            session_secret,
+            'exit'
+        ]
+        ssh_commands(script, 5.0)
 
     def run_jenkins_playbook(self) -> None:
         with open('development/jenkins_ip.txt', 'r') as file:
