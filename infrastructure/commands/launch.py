@@ -70,19 +70,11 @@ class Launch(ScriptCommand):
         launch_playbook = 'ANSIBLE_FORCE_COLOR=True ansible-playbook --extra-vars \'{"aws_server":"X.X.X.X", "key1":"/home/vagrant/key"}\' /home/vagrant/bac/infrastructure/deployment/deployment.yaml -i /home/vagrant/bac/infrastructure/deployment/hosts.yaml'
         ansible_playbook_command = launch_playbook.replace('X.X.X.X', static_ip)
 
-        channel = ssh.invoke_shell()
-        stdin = channel.makefile('wb')
-        stdout = channel.makefile('rb')
+        script = [
+            'cd /home/vagrant/bac',
+            'git pull origin',
+            ansible_playbook_command,
+            'exit'
+        ]
 
-        stdin.write('cd /home/vagrant/bac' + '\n')
-        stdin.write('git pull origin' + '\n')
-        stdin.write(ansible_playbook_command + '\n')
-        stdin.write('exit' + '\n')
-        stdin.flush()
-
-        colorama.init(convert=True, autoreset=True)
-        lines = stdout.readlines()
-        for line in lines:
-            print(fix_ansi(str(line)))
-
-        channel.close()
+        ssh_commands(script, 30.0)
