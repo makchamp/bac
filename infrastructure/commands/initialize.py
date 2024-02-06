@@ -8,15 +8,8 @@ class Initialize(ScriptCommand):
     def __init__(self):
         self.name="initialize"
         self.help_message="used to create the specified machine from scratch"
-        self.choices=["prod", "jenkins", "vm", "all"]
-        self.argument = {"dest": "selection", "nargs": "+", "type": str, "metavar": "machine/s", "help": "prod|jenkins|vm|all"}
-
-    def initialize_jenkins_server(self) -> None:
-        jenkins_machine = Terraform(working_dir='./development/')
-        output = jenkins_machine.init(kwargs={"capture_output":True})
-        print(format_tf_output("Initialization of Jenkins Server", output))
-        output = jenkins_machine.apply(skip_plan=True)
-        print(format_tf_output("Creation of Jenkins Server", output))
+        self.choices=["prod", "vm", "all"]
+        self.argument = {"dest": "selection", "nargs": "+", "type": str, "metavar": "machine/s", "help": "prod|vm|all"}
 
     def initialize_virtual_machine(self, machine_name: str) -> None:
         vagrant_file = './development/'
@@ -36,5 +29,3 @@ class Initialize(ScriptCommand):
                 self.initialize_virtual_machine("main")
             if arg == "prod" or arg == "all":
                 self.initialize_deployment_server()
-            if arg == "jenkins" or arg == "all":
-                self.initialize_jenkins_server()
