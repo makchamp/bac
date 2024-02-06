@@ -54,7 +54,7 @@ echo "============================================"
 echo ""
 
 apt install virtualbox -y
-wget -p /tmp/ https://releases.hashicorp.com/vagrant/2.3.7/vagrant_2.3.7-1_amd64.deb
+wget -P /tmp/ https://releases.hashicorp.com/vagrant/2.3.7/vagrant_2.3.7-1_amd64.deb
 apt install /tmp/vagrant_2.3.7-1_amd64.deb -y
 
 echo ""
@@ -79,9 +79,7 @@ sudo -u vagrant bash -c '
   eval `ssh-agent`; \
   ssh-add; \
   git clone git@github.com:makchamp/bac.git /home/vagrant/bac; \
-  cd /home/vagrant/bac; \
-  git checkout jenkins_pipeline; \
-  cd infrastructure; \
+  cd /home/vagrant/bac/infrastructure; \
   pip3 install -r requirements.txt; \
 '
 

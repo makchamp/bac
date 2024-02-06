@@ -1,7 +1,7 @@
 import argparse
 import paramiko
 import sys
-from os import walk
+import os
 from commands import *
 from increased_argument_parser import IncreasedArgumentParser
 from script_command import ScriptCommand
@@ -34,12 +34,12 @@ def script_execution() -> None:
     )
 
     command_files = []
-    for (dirpath, dirnames, filenames) in walk("commands"):
+    for (dirpath, dirnames, filenames) in os.walk("commands"):
         command_files.extend(filenames)
         break
-    
+
     for filename in command_files:
-        file_path = "commands\\" + filename
+        file_path = os.path.join("commands", filename)
         module_name = ""
         module_split = filename.rsplit("_")
         for piece in module_split:
