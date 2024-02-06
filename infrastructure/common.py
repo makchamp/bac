@@ -1,4 +1,7 @@
+import time
+import colorama
 import paramiko
+import select
 import re
 import sys
 import traceback
@@ -45,7 +48,32 @@ def ssh_connect(host: str=HOST, machine_name: str='default') -> None:
         print("[-] Listen failed: " + str(e))
         traceback.print_stack()
         sys.exit(1)
-       
+
+def ssh_commands(commands: list[str], time_limit: float) -> None:
+    colorama.init(convert=True, autoreset=True)
+    channel = ssh.invoke_shell()
+    command_counter = 0
+    time_counter = time_limit
+
+    while True:
+        if channel.exit_status_ready():                                
+            break
+
+        if channel.recv_ready():
+            output = channel.recv(1024)
+            print((fix_ansi(str(output))))
+            time_counter = time_limit
+        else:
+            time.sleep(1)
+            time_counter -= 1
+            if (time_counter == 0):
+                if (command_counter < len(commands)):
+                    channel.send(commands[command_counter] + '\n')
+                    command_counter += 1
+                time_counter = time_limit
+    
+    channel.close()
+
 def ssh_disconnect() -> None:
     print("closing connection")
     ssh.close()
