@@ -33,8 +33,9 @@ class Launch(ScriptCommand):
             '',
             HOST,
             session_secret,
-            'exit'
-        ]
+            'cd development',
+            'sudo docker compose up'
+        ] #'exit'
         ssh_commands(script, 5.0)
 
     def run_deployment_playbook(self) -> None:
@@ -46,8 +47,7 @@ class Launch(ScriptCommand):
         script = [
             'cd /home/vagrant/bac',
             'git pull origin',
-            ansible_playbook_command,
-            'exit'
-        ]
+            ansible_playbook_command
+        ] #'exit'
 
-        ssh_commands(script, 30.0)
+        ssh_commands(script, 10.0)
