@@ -18,17 +18,8 @@
         upgrade: 'yes'
 
     - name: Rebooting System
-      shell: sleep 10 && /sbin/shutdown -r now 'Rebooting box to update system libs/kernel as needed' 
-      args:
-        removes: /var/run/reboot-required
-      async: 300
-      poll: 1
-      ignore_errors: true
-     
-    - name: Waiting for Reconnection
-      wait_for_connection:
-        delay: 10
-        timeout: 60
+      reboot:
+        reboot_timeout: 120
 
     - name: Adding Docker GPG Apt Key
       apt_key:
@@ -56,7 +47,7 @@
 
     - name: Copying Private Key to SSH Directory
       copy:
-        src: /home/ubuntu/transfer/id_rsa
+        src: /home/ubuntu/transfer/deployment/id_rsa
         dest: /home/ubuntu/.ssh/id_rsa
         remote_src: true
         mode: 0600
@@ -68,7 +59,7 @@
         key_file: /home/ubuntu/.ssh/id_rsa
         accept_hostkey: yes
         force: yes
-        version: script_automation
+        version: master
     
     - name: Copying Client .ENV
       copy:
@@ -108,7 +99,7 @@
     
     - name: Launching Application
       become: true
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: /home/ubuntu/bac/infrastructure/deployment
         files:
         - docker-compose.yml
