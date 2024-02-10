@@ -33,7 +33,7 @@ class Launch(ScriptCommand):
             '',
             HOST,
             session_secret,
-            'cd development',
+            'cd deployment',
             'sudo docker compose up'
         ] #'exit'
         ssh_commands(script, 5.0)

@@ -19,7 +19,7 @@ class Teardown(ScriptCommand):
                 self.destroy_deployment_server()
 
     def destroy_virtual_machine(self, machine_name: str) -> None:
-        vagrant_file = './development/'
+        vagrant_file = './deployment/'
         local_virtual_machine = vagrant.Vagrant(vagrant_file, out_cm=vagrant.stdout_cm, err_cm=vagrant.stderr_cm)
         local_virtual_machine.destroy(vm_name=machine_name)
 

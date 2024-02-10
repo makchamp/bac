@@ -19,7 +19,7 @@ class MachineStatus(ScriptCommand):
                 self.validate_deployment_server()
 
     def validate_virtual_machine(self, machine_name: str) -> None:
-        vagrant_file = './development/'
+        vagrant_file = './deployment/'
         local_virtual_machine = vagrant.Vagrant(vagrant_file, out_cm=vagrant.stdout_cm, err_cm=vagrant.stderr_cm)
         status = local_virtual_machine.status(vm_name=machine_name)
         for stat in status:
