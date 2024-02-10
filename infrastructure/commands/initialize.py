@@ -8,8 +8,8 @@ class Initialize(ScriptCommand):
     def __init__(self):
         self.name="initialize"
         self.help_message="used to create the specified machine from scratch"
-        self.choices=["prod", "vm", "all"]
-        self.argument = {"dest": "selection", "nargs": "+", "type": str, "metavar": "machine/s", "help": "prod|vm|all"}
+        self.choices=["cloud_vm", "local_vm", "all"]
+        self.argument = {"dest": "selection", "nargs": "+", "type": str, "metavar": "machine/s", "help": "cloud_vm|local_vm|all"}
 
     def initialize_virtual_machine(self, machine_name: str) -> None:
         vagrant_file = './deployment/'
@@ -25,7 +25,7 @@ class Initialize(ScriptCommand):
 
     def command(self, *args: str) -> None:
         for arg in args:
-            if arg == "vm" or arg == "all":
+            if arg == "local_vm" or arg == "all":
                 self.initialize_virtual_machine("main")
-            if arg == "prod" or arg == "all":
+            if arg == "cloud_vm" or arg == "all":
                 self.initialize_deployment_server()
