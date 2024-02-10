@@ -8,23 +8,26 @@ apt update -y
 
 echo ""
 echo "============================================"
-echo "            INSTALLING ANSIBLE              "
-echo "============================================"
-echo ""
-
-apt update -y
-apt install software-properties-common -y
-add-apt-repository --yes --update ppa:ansible/ansible
-apt install ansible -y
-apt install ansible-lint -y
-
-echo ""
-echo "============================================"
 echo "             INSTALLING PIP                 "
 echo "============================================"
 echo ""
 
 apt install python3-pip -y
+
+echo ""
+echo "============================================"
+echo "            INSTALLING ANSIBLE              "
+echo "============================================"
+echo ""
+
+python3 -m pip install --upgrade ansible
+
+#apt update -y
+#apt install software-properties-common -y
+#add-apt-repository --yes --update ppa:ansible/ansible
+#apt install ansible -y
+#apt install ansible-lint -y
+
 
 echo ""
 echo "============================================"

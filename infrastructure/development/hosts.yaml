@@ -1,9 +1,0 @@
-servers:
-  hosts:
-    jenkins_server01:
-      ansible_host: "{{ aws_server }}"
-  vars:
-    ansible_connection: ssh
-    ansible_ssh_private_key_file: "{{ key1 }}"
-    ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
-    ansible_user: ubuntu
