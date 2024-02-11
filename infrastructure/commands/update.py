@@ -1,13 +1,16 @@
 import colorama
-from common import *
+from common import HOST, ssh_connect, fix_ansi, ssh_disconnect, ssh
 from script_command import ScriptCommand
 
 class Update(ScriptCommand):
 
     def __init__(self):
+        super().__init__()
         self.name="update"
         self.help_message="used to pull and update the specified machine with the latest changes"
+
         self.choices=["vm_branch, vm_docker"]
+
         self.argument = {
             "dest": "selection",
             "nargs": "+",
@@ -15,7 +18,7 @@ class Update(ScriptCommand):
             "metavar": "machine/s",
             "help": "vm_branch {followed by the branch name} | vm_docker"
         }
-    
+
     def command(self, *args: str) -> None:
         for arg in args:
             if arg == "vm_branch":
@@ -44,7 +47,7 @@ class Update(ScriptCommand):
             print(fix_ansi(str(line)))
 
         channel.close()
-    
+
     def vm_update_docker(self) -> None:
         channel = ssh.invoke_shell()
         stdin = channel.makefile('wb')

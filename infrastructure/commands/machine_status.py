@@ -1,21 +1,34 @@
 import vagrant
+from python_terraform import Terraform
 from common import format_tf_output
-from python_terraform import Terraform, IsFlagged, IsNotFlagged
 from script_command import ScriptCommand
 
 class MachineStatus(ScriptCommand):
 
     def __init__(self):
+        super().__init__()
         self.name = "machine_status"
         self.help_message = "used to check the creation status of the specified machine"
-        self.choices = ["cloud_vm", "local_vm", "all"]
-        self.argument = {"dest": "selection", "nargs": "+", "type": str, "metavar": "machine/s", "help": "cloud_vm|local_vm|all"}
+
+        self.choices = [
+            "cloud_vm",
+            "local_vm",
+            "all"
+        ]
+
+        self.argument = {
+            "dest": "selection",
+            "nargs": "+",
+            "type": str,
+            "metavar": "machine/s",
+            "help": "cloud_vm|local_vm|all"
+        }
 
     def command(self, *args: str) -> None:
         for arg in args:
-            if arg == "local_vm" or arg == "all":
+            if arg in ("local_vm", "all"):
                 self.validate_virtual_machine('main')
-            if arg == "cloud_vm" or arg == "all":
+            if arg in ("cloud_vm", "all"):
                 self.validate_deployment_server()
 
     def validate_virtual_machine(self, machine_name: str) -> None:

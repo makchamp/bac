@@ -1,11 +1,10 @@
 import argparse
-import paramiko
-import sys
+import importlib
 import os
-from commands import *
+import sys
+import paramiko
 from increased_argument_parser import IncreasedArgumentParser
 from script_command import ScriptCommand
-import importlib
 
 # Vagrant Variables
 HOST = '192.168.33.223'
@@ -34,7 +33,8 @@ def script_execution() -> None:
     )
 
     command_files = []
-    for (dirpath, dirnames, filenames) in os.walk("commands"):
+    for walked_output in os.walk("commands"):
+        filenames = walked_output[2]
         command_files.extend(filenames)
         break
 
