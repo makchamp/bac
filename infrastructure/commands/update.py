@@ -50,9 +50,9 @@ class Update(ScriptCommand):
         stdin = channel.makefile('wb')
         stdout = channel.makefile('rb')
 
-        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/development/docker-compose.yml down -v --rmi all' + '\n')
-        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/development/docker-compose.yml build --no-cache' + '\n')
-        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/development/docker-compose.yml up --pull always --force-recreate' + '\n')
+        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml down -v --rmi all' + '\n')
+        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml build --no-cache' + '\n')
+        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml up --pull always --force-recreate' + '\n')
 
         stdin.flush()
 

@@ -40,7 +40,7 @@ def format_tf_output(operation: str, output: tuple) -> str:
 def ssh_connect(host: str=HOST, machine_name: str='default') -> None:
     try:
        print("creating connection")
-       key = f"development/.vagrant/machines/{machine_name}/{KEY_LOCATION}"
+       key = f"deployment/.vagrant/machines/{machine_name}/{KEY_LOCATION}"
        ssh_key = paramiko.RSAKey.from_private_key(open(key))
        ssh.connect(host, username='vagrant', pkey=ssh_key)
        print("Connected!")

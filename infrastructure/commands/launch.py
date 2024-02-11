@@ -8,17 +8,17 @@ class Launch(ScriptCommand):
     def __init__(self):
         self.name="launch"
         self.help_message="used to launch the application on the specified machine"
-        self.choices=["prod", "vm", "all"]
-        self.argument = {"dest": "selection", "nargs": "+", "type": str, "metavar": "machine/s", "help": "prod|vm|all"}
+        self.choices=["cloud_vm", "local_vm", "all"]
+        self.argument = {"dest": "selection", "nargs": "+", "type": str, "metavar": "machine/s", "help": "cloud_vm|local_vm|all"}
 
     def command(self, *args: str) -> None:
         for arg in args:
-            if arg == "vm" or arg == "all":
+            if arg == "local_vm" or arg == "all":
                 ssh_connect(HOST, 'main')
                 session_secret = input("Please Enter the session secret: ")
                 self.run_application_locally(session_secret)
                 ssh_disconnect()
-            if arg == "prod" or arg == "all":
+            if arg == "cloud_vm" or arg == "all":
                 ssh_connect(HOST, 'main')
                 self.run_deployment_playbook()
                 ssh_disconnect()
@@ -33,7 +33,7 @@ class Launch(ScriptCommand):
             '',
             HOST,
             session_secret,
-            'cd development',
+            'cd deployment',
             'sudo docker compose up'
         ] #'exit'
         ssh_commands(script, 5.0)

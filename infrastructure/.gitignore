@@ -14,7 +14,6 @@
 
 # TF Generated IP Files
 deployment/instance_ip.txt
-development/jenkins_ip.txt
 
 # All Vagrant Generated Files
 */.vagrant/

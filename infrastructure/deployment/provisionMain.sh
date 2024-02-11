@@ -69,7 +69,6 @@ echo ""
 cp /transfer/deployment/id_rsa /home/vagrant/.ssh/
 cp /transfer/deployment/id_rsa.pub /home/vagrant/.ssh/
 cp /keys/deployment/scattegoriesSSH /home/vagrant/key
-cp /keys/development/jenkinsSSH /home/vagrant/jenkins_key
 chmod 700 /home/vagrant/.ssh
 chmod 600 /home/vagrant/.ssh/id_rsa
 chmod 600 /home/vagrant/key
