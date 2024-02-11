@@ -17,8 +17,8 @@ ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 def script_execution() -> None:
     parser = argparse.ArgumentParser(
-        prog="launchScript.py",
-        usage="launchScript.py [-h] [-v] subcommands",
+        prog="launch_script.py",
+        usage="launch_script.py [-h] [-v] subcommands",
         description="Execute Any Automated Infrastructure Task",
         epilog="For future additions or questions ask Avery for help! :)",
         allow_abbrev=False,
