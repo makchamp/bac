@@ -6,9 +6,10 @@ import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
 import { useUserStore } from '../services/state';
 import PlayerListItem from './PlayerListItem';
+import Tooltip from '@mui/material/Tooltip';
 
 const PlayerList = ({ users, roomName }) => {
-  const user = useUserStore((state) => state.user);
+  const { currentUser } = useUserStore();
 
   return (
     <Grid
@@ -35,13 +36,19 @@ const PlayerList = ({ users, roomName }) => {
             bgcolor: 'background.paper',
           }}
           subheader={<ListSubheader>Players</ListSubheader>}>
-          {user.socketID && (
-            <PlayerListItem key={user.userID} user={user}></PlayerListItem>
+          {currentUser.socketID && (
+            <Tooltip title='You' placement="left">
+              <Paper variant='outlined' elevation={0}>
+                <PlayerListItem
+                  key={currentUser.userID}
+                  user={currentUser}></PlayerListItem>
+              </Paper>
+            </Tooltip>
           )}
           {users.map((u, index) => {
             return (
               u.inRoom &&
-              u.userID !== user.userID && (
+              u.userID !== currentUser.userID && (
                 <PlayerListItem key={index} user={u}></PlayerListItem>
               )
             );

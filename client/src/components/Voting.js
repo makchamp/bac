@@ -16,6 +16,9 @@ import TableRow from '@mui/material/TableRow';
 import { useState, useEffect, useCallback } from 'react';
 import { putObject, fetchObject, keys } from '../services/storage';
 import { nextCategoryEvent } from '../services/gameService';
+import { useUserStore } from '../services/state';
+import Tooltip from '@mui/material/Tooltip';
+
 const Voting = ({ gameState, vote, nextCategory }) => {
   const currentCategory = gameState.currentCategory;
   const categories = gameState.categories[gameState.currentRound];
@@ -26,6 +29,7 @@ const Voting = ({ gameState, vote, nextCategory }) => {
     return category.answers.map(({ answ, score, ...checked }) => checked);
   }, [category.answers]);
   const [votingButtons, setVotingButtons] = useState(answerRatings());
+  const { currentUser } = useUserStore();
 
   const voteButtonLabels = {
     upvote: { label: 'upvote' },
@@ -99,13 +103,21 @@ const Voting = ({ gameState, vote, nextCategory }) => {
               Round {gameState.currentRound + 1} - Voting {roundCounter()}
             </Typography>
           </Box>
-          <Button
-            variant='outlined'
-            color='success'
-            sx={{ fontSize: '30px' }}
-            onClick={handleNextCategory}>
-            {currentCategory + 1 === categories.length ? 'End Round' : 'Next'}
-          </Button>
+          <Tooltip
+            title={!currentUser?.isHost ? 'Waiting for host to continue...' : ''}>
+            <span>
+              <Button
+                variant='outlined'
+                color='success'
+                sx={{ fontSize: '30px' }}
+                onClick={handleNextCategory}
+                disabled={!currentUser?.isHost}>
+                {currentCategory + 1 === categories.length
+                  ? 'End Round'
+                  : 'Next'}
+              </Button>
+            </span>
+          </Tooltip>
         </Toolbar>
       </AppBar>
       <Typography

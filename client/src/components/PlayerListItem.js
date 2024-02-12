@@ -2,9 +2,10 @@ import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import AddModeratorIcon from '@mui/icons-material/AddModerator';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PersonIcon from '@mui/icons-material/Person';
 import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 
 const PlayerListItem = ({ user }) => {
   return (
@@ -13,8 +14,10 @@ const PlayerListItem = ({ user }) => {
       secondaryAction={
         user.isHost && (
           <>
-            <Tooltip title='Room Admin'>
-              <AddModeratorIcon />
+            <Tooltip title='Game Host'>
+            <IconButton>
+              <AdminPanelSettingsIcon />
+              </IconButton>
             </Tooltip>
           </>
         )

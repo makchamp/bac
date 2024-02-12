@@ -1,15 +1,15 @@
 import { create } from 'zustand';
 import { User } from '../models/User';
 
-// State Management
+// Manage State
 
 export const useUserStore = create((set) => ({
-  user: new User({}),
-  setUser: (newUser) =>
+  currentUser: new User({}),
+  setCurrentUser: (userData) =>
     set((state) => ({
-      user: {
+      currentUser: {
         ...state.user,
-        ...newUser,
+        ...userData,
       },
     })),
 }));

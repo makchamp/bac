@@ -25,7 +25,7 @@ const RoomInputField = styled(Input)(() => ({
 const ConnectRoom = () => {
   const [userName, setUserName] = useState('');
   const [roomName, setRoomName] = useState('');
-  const { setUser } = useUserStore();
+  const { setCurrentUser } = useUserStore();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,7 +40,7 @@ const ConnectRoom = () => {
       userName,
       roomName,
     };
-    setUser(user);
+    setCurrentUser(user);
     putObject(keys.user, user);
     navigate(`/room/${roomName}`, { replace: true });
   }

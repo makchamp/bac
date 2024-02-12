@@ -9,13 +9,15 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import { useEffect, useState } from 'react';
+import { useUserStore } from '../services/state';
 
 const PostRound = ({ gameState, users, nextRound }) => {
   const handleNextRound = () => {
     nextRound();
   };
-
+  const { currentUser } = useUserStore();
   const [tableData, setTableData] = useState([[]]);
 
   const sortTableScores = (td) => {
@@ -84,13 +86,21 @@ const PostRound = ({ gameState, users, nextRound }) => {
                 : 'Final Results'}
             </Typography>
           </Box>
-          <Button
-            variant='outlined'
-            color={isFinalRound() ? 'error' : 'warning'}
-            sx={{ fontSize: '30px' }}
-            onClick={handleNextRound}>
-            {isFinalRound() ? 'End Game' : 'Next Round'}
-          </Button>
+          <Tooltip
+            title={
+              !currentUser?.isHost ? 'Waiting for host to continue...' : ''
+            }>
+            <span>
+              <Button
+                variant='outlined'
+                color={isFinalRound() ? 'error' : 'warning'}
+                sx={{ fontSize: '30px' }}
+                onClick={handleNextRound}
+                disabled={!currentUser?.isHost}>
+                {isFinalRound() ? 'End Game' : 'Next Round'}
+              </Button>
+            </span>
+          </Tooltip>
         </Toolbar>
       </AppBar>
 

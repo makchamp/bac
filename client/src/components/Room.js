@@ -37,6 +37,7 @@ import {
   animals,
 } from 'unique-names-generator';
 import { useUserStore } from '../services/state';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 const Room = ({ username }) => {
   const socket = useContext(SocketContext);
@@ -46,7 +47,7 @@ const Room = ({ username }) => {
 
   const [users, setUsers] = useState([]);
   const [roomName, setRoomName] = useState('');
-  const { user, setUser } = useUserStore();
+  const { currentUser, setCurrentUser } = useUserStore();
 
   useEffect(() => {
     const initRoom = () => {
@@ -71,7 +72,7 @@ const Room = ({ username }) => {
           usrName = userLocalStore.userName;
         }
         const userObj = { userName: usrName, roomName: room };
-        setUser(userObj);
+        setCurrentUser(userObj);
         putObject(keys.user, userObj);
       }
       if (!connectRoom(socket, { userName: usrName, roomName: room })) {
@@ -80,7 +81,7 @@ const Room = ({ username }) => {
     };
 
     initRoom();
-  }, [socket, username, roomName, params.roomName, navigate, setUser]);
+  }, [socket, username, roomName, params.roomName, navigate, setCurrentUser]);
 
   const [timer, setTimer] = useState('');
   const gameStates = {
@@ -191,7 +192,7 @@ const Room = ({ username }) => {
       socket.on(userInfoEvent, (userInfo) => {
         if (mounted) {
           if (userInfo) {
-            setUser(new User({ ...userInfo }));
+            setCurrentUser(new User({ ...userInfo }));
           }
         }
       });
@@ -214,7 +215,7 @@ const Room = ({ username }) => {
     gameStates.Voting,
     roomName,
     navigate,
-    setUser,
+    setCurrentUser,
   ]);
 
   const resetGameSettings = () => {
@@ -241,7 +242,7 @@ const Room = ({ username }) => {
   };
 
   const setGameStart = () => {
-    const { userName } = user;
+    const { userName } = currentUser;
     startGame(socket, {
       userName,
       roomName,
@@ -315,17 +316,20 @@ const Room = ({ username }) => {
             md={8}
             sx={{ maxHeight: '100vh', overflow: 'auto' }}>
             {renderGameState(gameState.state)}
-            {gameState.state === gameStates.Lobby && (
+            {gameState.state === gameStates.Lobby && currentUser.isHost && (
               <Button
                 variant='contained'
                 size='large'
                 color='success'
                 onClick={() => setGameStart()}
                 sx={{
-                  marginLeft: '40%',
-                  marginRight: '40%',
+                  ml: '40%',
+                  mr: '40%',
+                  mb: '10%',
                   height: '50px',
-                }}>
+                  p: 2,
+                }}
+                startIcon={<PlayArrowIcon />}>
                 Start Game!
               </Button>
             )}
