@@ -3,15 +3,13 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListSubheader from '@mui/material/ListSubheader';
-import AddModeratorIcon from '@mui/icons-material/AddModerator';
-import PersonIcon from '@mui/icons-material/Person';
-import Tooltip from '@mui/material/Tooltip';
+import { useUserStore } from '../services/state';
+import PlayerListItem from './PlayerListItem';
 
 const PlayerList = ({ users, roomName }) => {
+  const user = useUserStore((state) => state.user);
+
   return (
     <Grid
       item
@@ -37,31 +35,15 @@ const PlayerList = ({ users, roomName }) => {
             bgcolor: 'background.paper',
           }}
           subheader={<ListSubheader>Players</ListSubheader>}>
-          {users.map((user, index) => {
-            return user.inRoom ? (
-              <ListItem
-                key={index}
-                secondaryAction={
-                  user.isHost && (
-                    <>
-                      <Tooltip title='Room Admin'>
-                        <AddModeratorIcon />
-                      </Tooltip>
-                    </>
-                  )
-                }>
-                <ListItemIcon>
-                  {' '}
-                  <PersonIcon />{' '}
-                </ListItemIcon>
-                <ListItemText id={index}>
-                  <Typography variant='h5' key={index}>
-                    {user.userName}
-                  </Typography>
-                </ListItemText>
-              </ListItem>
-            ) : (
-              ''
+          {user.socketID && (
+            <PlayerListItem key={user.userID} user={user}></PlayerListItem>
+          )}
+          {users.map((u, index) => {
+            return (
+              u.inRoom &&
+              u.userID !== user.userID && (
+                <PlayerListItem key={index} user={u}></PlayerListItem>
+              )
             );
           })}
         </List>

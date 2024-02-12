@@ -14,7 +14,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import { useState, useEffect, useCallback } from 'react';
-import { putObject, fetchObject, keys } from '../services/cache';
+import { putObject, fetchObject, keys } from '../services/storage';
 import { nextCategoryEvent } from '../services/gameService';
 const Voting = ({ gameState, vote, nextCategory }) => {
   const currentCategory = gameState.currentCategory;

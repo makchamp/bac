@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   userSetChanged,
   roomFullError,
+  userInfoEvent,
   connectRoom,
 } from '../services/roomService';
 import {
@@ -24,18 +25,20 @@ import PlayerList from './PlayerList';
 import Round from './Round';
 import { generateLetters } from './Letters';
 import { generateCategories } from './Categories';
-import { putObject, removeObject, fetchObject, keys } from '../services/cache';
+import { putObject, removeObject, fetchObject, keys } from '../services/storage';
 import PostRound from './PostRound';
 import Voting from './Voting';
 import Loading from './Loading';
 import { UIMessage } from '../models/UIMessage';
+import { User } from '../models/User';
 import {
   uniqueNamesGenerator,
   adjectives,
   animals,
 } from 'unique-names-generator';
+import { useUserStore } from '../services/state';
 
-const Room = ({username}) => {
+const Room = ({ username }) => {
   const socket = useContext(SocketContext);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -43,7 +46,7 @@ const Room = ({username}) => {
 
   const [users, setUsers] = useState([]);
   const [roomName, setRoomName] = useState('');
-  const [userName, setUserName] = useState(username);
+  const { user, setUser } = useUserStore();
 
   useEffect(() => {
     const initRoom = () => {
@@ -53,30 +56,31 @@ const Room = ({username}) => {
         return navigate('/', { replace: true });
       }
       setRoomName(room);
-      
+
       let usrName = username;
       if (!usrName) {
-        const user = fetchObject(keys.user);
-        if (!user?.userName) {
+        const userLocalStore = fetchObject(keys.user);
+        if (!userLocalStore?.userName) {
           // If no user create one with random name
           usrName = uniqueNamesGenerator({
             dictionaries: [adjectives, animals],
             separator: ' ',
             style: 'capital',
           });
-          putObject(keys.user, { userName: usrName, roomName: room });
         } else {
-          usrName = user.userName;
+          usrName = userLocalStore.userName;
         }
-        setUserName(username);
+        const userObj = { userName: usrName, roomName: room };
+        setUser(userObj);
+        putObject(keys.user, userObj);
       }
       if (!connectRoom(socket, { userName: usrName, roomName: room })) {
         return navigate('/', { replace: true });
-      };
+      }
     };
 
     initRoom();
-  }, [socket, username, roomName, params.roomName, navigate]);
+  }, [socket, username, roomName, params.roomName, navigate, setUser]);
 
   const [timer, setTimer] = useState('');
   const gameStates = {
@@ -182,8 +186,19 @@ const Room = ({username}) => {
         }
       });
     };
-    handleRoomFullError();
 
+    const handleRecieveUserInfo = () => {
+      socket.on(userInfoEvent, (userInfo) => {
+        if (mounted) {
+          if (userInfo) {
+            setUser(new User({ ...userInfo }));
+          }
+        }
+      });
+    };
+
+    handleRoomFullError();
+    handleRecieveUserInfo();
     setUserChangeSocket();
     setGameTimer();
     setGameStateListener();
@@ -199,6 +214,7 @@ const Room = ({username}) => {
     gameStates.Voting,
     roomName,
     navigate,
+    setUser,
   ]);
 
   const resetGameSettings = () => {
@@ -225,6 +241,7 @@ const Room = ({username}) => {
   };
 
   const setGameStart = () => {
+    const { userName } = user;
     startGame(socket, {
       userName,
       roomName,

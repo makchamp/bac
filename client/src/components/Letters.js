@@ -6,32 +6,31 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 export const generateLetters = () => {
-  const lestCommon5 = ['x', 'z', 'y', 'q', 'k'];
+  const leastCommon5 = ['x', 'z', 'y', 'q', 'k'];
   const alphabet = {};
   for (let i = 97; i <= 122; i++) {
     const letter = String.fromCharCode(i);
     alphabet[letter] = {
-      isActive: !lestCommon5.includes(letter),
+      isActive: !leastCommon5.includes(letter),
     };
   }
   return alphabet;
-}
+};
 
 const Letters = ({
   letters,
   setLetters,
   letterRotation,
-  setLetterRotation
+  setLetterRotation,
 }) => {
-
   const onLetterToggle = (letter) => {
     letters[letter].isActive = !letters[letter].isActive;
     setLetters({ ...letters });
-  }
+  };
 
   const onLetterRotationToggle = (event) => {
     setLetterRotation(event.target.checked);
-  }
+  };
 
   return (
     <Box>
@@ -43,8 +42,7 @@ const Letters = ({
           justifyContent: 'center',
           alignContent: 'center',
           p: 1,
-        }}
-      >
+        }}>
         {Object.keys(letters).map((letter) => {
           return (
             <ToggleButton
@@ -52,20 +50,20 @@ const Letters = ({
               value={letter}
               selected={letters[letter].isActive}
               onChange={() => onLetterToggle(letter)}
-              size="large"
-              sx={{ m: 0.5, fontSize: 20 }}
-            >
+              size='large'
+              sx={{ m: 0.5, fontSize: 20 }}>
               {letter}
-            </ToggleButton>)
+            </ToggleButton>
+          );
         })}
       </Paper>
       <Box sx={{ mt: 4 }}>
-        <Typography >Letter Rotation</Typography>
+        <Typography>Letter Rotation</Typography>
         <Typography sx={{ color: 'text.secondary' }}>
           Determine whether each category requires a different letter
         </Typography>
 
-        <Stack direction="row" spacing={5} alignItems="center">
+        <Stack direction='row' spacing={5} alignItems='center'>
           <Typography>Single Letter Per Round</Typography>
           <Switch checked={letterRotation} onChange={onLetterRotationToggle} />
           <Typography>Multiple Letters Per Round</Typography>
@@ -73,6 +71,6 @@ const Letters = ({
       </Box>
     </Box>
   );
-}
+};
 
 export default Letters;
