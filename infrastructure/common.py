@@ -7,7 +7,7 @@ import paramiko
 from paramiko import AuthenticationException, BadHostKeyException, SSHException
 
 # Vagrant Variables
-HOST = '192.168.33.223'
+HOST = '192.168.56.10'
 KEY_LOCATION = 'virtualbox/private_key'
 TF_OUTPUT_OFFSET = 4
 

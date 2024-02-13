@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
     main.vm.synced_folder "../deployment/keys", "/keys/deployment"
   
     # Networking
-    main.vm.network "private_network", ip: "192.168.33.223"
+    main.vm.network "private_network", ip: "192.168.56.10"
   
     # Hardware
     main.vm.provider "virtualbox" do |vb|
