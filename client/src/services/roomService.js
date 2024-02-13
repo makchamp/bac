@@ -1,7 +1,7 @@
 const join = 'room:join';
 const userSetChanged = 'room:userSetChanged';
 const roomFullError = 'user:JoinRoomError:RoomFull';
-const userInfoEvent = 'user:Info';
+const userJoinEvent = 'user:Join';
 
 function connectRoom(socket, data) {
   if (!data?.userName || !data?.roomName) {
@@ -11,4 +11,4 @@ function connectRoom(socket, data) {
   return true;
 }
 
-export { userSetChanged, roomFullError, userInfoEvent, connectRoom };
+export { userSetChanged, roomFullError, userJoinEvent, connectRoom };

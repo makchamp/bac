@@ -5,18 +5,6 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-export const generateLetters = () => {
-  const leastCommon5 = ['x', 'z', 'y', 'q', 'k'];
-  const alphabet = {};
-  for (let i = 97; i <= 122; i++) {
-    const letter = String.fromCharCode(i);
-    alphabet[letter] = {
-      isActive: !leastCommon5.includes(letter),
-    };
-  }
-  return alphabet;
-};
-
 const Letters = ({
   letters,
   setLetters,
@@ -43,7 +31,7 @@ const Letters = ({
           alignContent: 'center',
           p: 1,
         }}>
-        {Object.keys(letters).map((letter) => {
+        {letters && Object.keys(letters).map((letter) => {
           return (
             <ToggleButton
               key={letter}

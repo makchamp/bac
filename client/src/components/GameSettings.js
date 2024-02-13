@@ -15,14 +15,13 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { useState } from 'react';
-
 import { green, teal, purple, indigo } from '@mui/material/colors';
 import TimerIcon from '@mui/icons-material/Timer';
 import CategoryIcon from '@mui/icons-material/Category';
 import SpellcheckIcon from '@mui/icons-material/Spellcheck';
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
 import { useUserStore } from '../services/state';
+import { useState } from 'react';
 
 const panels = {
   general: 'generalPanel',
@@ -34,7 +33,7 @@ const GameSettings = ({
   setGameSettings,
   categories,
   setCategories,
-  resetGameSettings,
+  resetGameSettings
 }) => {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [panelExpanded, setPanelExpanded] = useState(false);

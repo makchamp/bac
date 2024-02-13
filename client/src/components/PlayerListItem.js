@@ -14,7 +14,7 @@ const PlayerListItem = ({ user }) => {
       secondaryAction={
         user.isHost && (
           <>
-            <Tooltip title='Game Host'>
+            <Tooltip title='Host'>
             <IconButton>
               <AdminPanelSettingsIcon />
               </IconButton>

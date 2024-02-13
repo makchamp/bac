@@ -1,12 +1,12 @@
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useCallback } from 'react';
 import { SocketContext } from '../services/socket';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   userSetChanged,
   roomFullError,
-  userInfoEvent,
+  userJoinEvent,
   connectRoom,
 } from '../services/roomService';
 import {
@@ -15,17 +15,24 @@ import {
   startEvent,
   nextCategoryEvent,
   startGame,
+  gameSettingsEvent,
   emitAnswer,
   emitNextCategory,
   emitVote,
   emitNextRound,
+  emitGameSettings,
+  emitResetGameSettings,
 } from '../services/gameService';
 import GameSettings from './GameSettings';
 import PlayerList from './PlayerList';
 import Round from './Round';
-import { generateLetters } from './Letters';
 import { generateCategories } from './Categories';
-import { putObject, removeObject, fetchObject, keys } from '../services/storage';
+import {
+  putObject,
+  removeObject,
+  fetchObject,
+  keys,
+} from '../services/storage';
 import PostRound from './PostRound';
 import Voting from './Voting';
 import Loading from './Loading';
@@ -38,15 +45,20 @@ import {
 } from 'unique-names-generator';
 import { useUserStore } from '../services/state';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import ErrorIcon from '@mui/icons-material/Error';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import { Typography } from '@mui/material';
 
 const Room = ({ username }) => {
   const socket = useContext(SocketContext);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const params = useParams();
 
   const [users, setUsers] = useState([]);
   const [roomName, setRoomName] = useState('');
+  const [uiMessage, setUiMessage] = useState(new UIMessage(false, ''));
   const { currentUser, setCurrentUser } = useUserStore();
 
   useEffect(() => {
@@ -96,23 +108,29 @@ const Room = ({ username }) => {
   });
   const [answers, setAnswers] = useState([]);
 
-  const defaultGameSettings = {
-    numOfRounds: 3,
-    lengthOfRound: 120,
-    multiScoring: true,
-    numOfCategories: 12,
-    letters: generateLetters(),
-    letterRotation: false,
-    toggleAllCategories: true,
-  };
-  const [gameSettings, setSettings] = useState(defaultGameSettings);
+  const [gameSettings, setSettings] = useState({});
 
   const [categories, setStateCategories] = useState({
     defaultCategories: generateCategories(true),
     customCategories: [],
   });
+
+  const getNumTotalSelectedCategories = useCallback(() => {
+    const numDefaults = categories?.defaultCategories
+      ? categories.defaultCategories.filter((c) => c.isActive).length
+      : 0;
+    const numCustoms = categories?.customCategories
+      ? categories.customCategories.length
+      : 0;
+    return numDefaults + numCustoms;
+  }, [categories]);
+  const [numSelectedCategories, setNumSelectedCategories] = useState(
+    getNumTotalSelectedCategories()
+  );
+ 
   const setGameSettings = (settings) => {
     setSettings(settings);
+    emitGameSettings(socket, { roomName, gameSettings: settings });
     putObject(keys.gameSettings, settings);
   };
   const setCategories = (categories) => {
@@ -122,10 +140,6 @@ const Room = ({ username }) => {
 
   useEffect(() => {
     const loadCache = () => {
-      const settings = fetchObject(keys.gameSettings);
-      if (settings) {
-        setGameSettings({ ...settings });
-      }
       const ctgs = fetchObject(keys.categories);
       if (ctgs) {
         setStateCategories({ ...ctgs });
@@ -189,10 +203,23 @@ const Room = ({ username }) => {
     };
 
     const handleRecieveUserInfo = () => {
-      socket.on(userInfoEvent, (userInfo) => {
+      socket.on(userJoinEvent, (payload) => {
         if (mounted) {
-          if (userInfo) {
-            setCurrentUser(new User({ ...userInfo }));
+          if (payload?.userInfo) {
+            setCurrentUser(new User({ ...payload.userInfo }));
+          }
+          if (payload?.gameSettings) {
+            setSettings(payload.gameSettings);
+          }
+        }
+      });
+    };
+
+    const handleGameSettingsEvent = () => {
+      socket.on(gameSettingsEvent, (gameSettings) => {
+        if (mounted) {
+          if (gameSettings) {
+            setSettings(gameSettings);
           }
         }
       });
@@ -203,6 +230,7 @@ const Room = ({ username }) => {
     setUserChangeSocket();
     setGameTimer();
     setGameStateListener();
+    handleGameSettingsEvent();
     return () => {
       mounted = false;
     };
@@ -218,8 +246,28 @@ const Room = ({ username }) => {
     setCurrentUser,
   ]);
 
+  
+
+  useEffect(() => {
+    setNumSelectedCategories(getNumTotalSelectedCategories());
+  }, [categories, gameSettings, getNumTotalSelectedCategories]);
+
+  useEffect(() => {
+    const onChangeNumSelectedCategories = () => {
+      if (numSelectedCategories < gameSettings?.numOfCategories) {
+        setUiMessage(new UIMessage(true, `Please select ${gameSettings.numOfCategories - numSelectedCategories} more categories`))
+      }
+      else {
+        setUiMessage(new UIMessage(false, ''));
+  
+      }
+    }
+    onChangeNumSelectedCategories();
+  }, [numSelectedCategories, gameSettings]);
+
+
   const resetGameSettings = () => {
-    setGameSettings(defaultGameSettings);
+    emitResetGameSettings(socket, { roomName });
     setCategories({
       defaultCategories: generateCategories(true),
       customCategories: [],
@@ -246,7 +294,6 @@ const Room = ({ username }) => {
     startGame(socket, {
       userName,
       roomName,
-      gameSettings,
       categories,
     });
   };
@@ -317,21 +364,31 @@ const Room = ({ username }) => {
             sx={{ maxHeight: '100vh', overflow: 'auto' }}>
             {renderGameState(gameState.state)}
             {gameState.state === gameStates.Lobby && currentUser.isHost && (
-              <Button
-                variant='contained'
-                size='large'
-                color='success'
-                onClick={() => setGameStart()}
-                sx={{
-                  ml: '40%',
-                  mr: '40%',
-                  mb: '10%',
-                  height: '50px',
-                  p: 2,
-                }}
-                startIcon={<PlayArrowIcon />}>
-                Start Game!
-              </Button>
+              <Box>
+                {uiMessage.isError && (
+                  <Alert
+                    icon={<ErrorIcon fontSize='inherit' />}
+                    severity='error'>
+                    {uiMessage.message}
+                  </Alert>
+                )}
+
+                <Button
+                  variant="contained"
+                  size='large'
+                  color='success'
+                  onClick={() => setGameStart()}
+                  sx={{
+                    ml: '40%',
+                    mr: '40%',
+                    mb: '40%',
+                    p: 2,
+                  }}
+                  startIcon={<PlayArrowIcon />}
+                  disabled={numSelectedCategories < gameSettings?.numOfCategories}>
+                  <Typography>Start Game</Typography>
+                </Button>
+              </Box>
             )}
           </Grid>
           <PlayerList users={users} roomName={roomName}></PlayerList>
