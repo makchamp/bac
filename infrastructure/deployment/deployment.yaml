@@ -45,20 +45,10 @@
         name: docker-compose
         state: latest
 
-    - name: Copying Private Key to SSH Directory
-      copy:
-        src: /home/ubuntu/transfer/deployment/id_rsa
-        dest: /home/ubuntu/.ssh/id_rsa
-        remote_src: true
-        mode: 0600
-
     - name: Cloning Repository
       git:
-        repo: git@github.com:makchamp/bac.git
+        repo: https://github.com/makchamp/bac.git
         dest: /home/ubuntu/bac
-        key_file: /home/ubuntu/.ssh/id_rsa
-        accept_hostkey: yes
-        force: yes
         version: master
     
     - name: Copying Client .ENV
