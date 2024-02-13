@@ -1,10 +1,9 @@
 import time
-import colorama
-import paramiko
-import select
 import re
 import sys
 import traceback
+import colorama
+import paramiko
 from paramiko import AuthenticationException, BadHostKeyException, SSHException
 
 # Vagrant Variables
@@ -17,13 +16,13 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 def fix_ansi(terminal_output: str) -> str:
-    INITIAL = "^(b')"
-    NEWLINE = r"\\r\\n'"
-    STARTLINE = r"\\r"
-    ESC = r"\\x1b"
-    NEW_ESC = r"\033"
-    return_string = re.sub(f"{INITIAL}|{NEWLINE}|{STARTLINE}", '', terminal_output)
-    return_string = re.sub(ESC, NEW_ESC, return_string)
+    initial = "^(b')"
+    new_line = r"\\r\\n'"
+    start_line = r"\\r"
+    esc = r"\\x1b"
+    new_esc = r"\033"
+    return_string = re.sub(f"{initial}|{new_line}|{start_line}", '', terminal_output)
+    return_string = re.sub(esc, new_esc, return_string)
     return return_string
 
 def format_tf_output(operation: str, output: tuple) -> str:
@@ -39,11 +38,11 @@ def format_tf_output(operation: str, output: tuple) -> str:
 
 def ssh_connect(host: str=HOST, machine_name: str='default') -> None:
     try:
-       print("creating connection")
-       key = f"deployment/.vagrant/machines/{machine_name}/{KEY_LOCATION}"
-       ssh_key = paramiko.RSAKey.from_private_key(open(key))
-       ssh.connect(host, username='vagrant', pkey=ssh_key)
-       print("Connected!")
+        print("creating connection")
+        key = f"deployment/.vagrant/machines/{machine_name}/{KEY_LOCATION}"
+        ssh_key = paramiko.RSAKey.from_private_key(open(key))
+        ssh.connect(host, username='vagrant', pkey=ssh_key)
+        print("Connected!")
     except (BadHostKeyException, AuthenticationException, SSHException) as e:
         print("[-] Listen failed: " + str(e))
         traceback.print_stack()
@@ -56,7 +55,7 @@ def ssh_commands(commands: list[str], time_limit: float) -> None:
     time_counter = time_limit
 
     while True:
-        if channel.exit_status_ready():                                
+        if channel.exit_status_ready():
             break
 
         if channel.recv_ready():
@@ -66,12 +65,12 @@ def ssh_commands(commands: list[str], time_limit: float) -> None:
         else:
             time.sleep(1)
             time_counter -= 1
-            if (time_counter == 0):
-                if (command_counter < len(commands)):
+            if time_counter == 0:
+                if command_counter < len(commands):
                     channel.send(commands[command_counter] + '\n')
                     command_counter += 1
                 time_counter = time_limit
-    
+
     channel.close()
 
 def ssh_disconnect() -> None:
