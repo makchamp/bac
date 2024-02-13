@@ -60,7 +60,9 @@ export default function registerGameHandlers(io, socket, store) {
             setRoundTimer(roomName, lengthOfRound);
           }
         } catch (error) {
-          console.trace(`Failed to start game in room: \'${roomName}\'- ${error}:`)
+          console.trace(
+            `Failed to start game in room: \'${roomName}\'- ${error}:`
+          );
         }
       });
     });
@@ -173,7 +175,7 @@ export default function registerGameHandlers(io, socket, store) {
         answers[sessionID].answers[currentRound][index].answ = value;
         setGameState(roomName, state);
       } catch (error) {
-        console.error(error);
+        console.trace(error);
       }
     });
   };
@@ -183,13 +185,12 @@ export default function registerGameHandlers(io, socket, store) {
     const users = Object.keys(answers);
     categories[currentRound].forEach((category, index) => {
       const categoryAns = [];
-      users.forEach((user) => {
-        const ans = answers[user].answers[currentRound][index];
+      users.forEach((userID) => {
+        const ans = { userID, ...answers[userID].answers[currentRound][index] };
         categoryAns.push(ans);
       });
       category.answers = categoryAns;
     });
-    emitGameState(roomName, state);
     setGameState(roomName, state);
   };
 

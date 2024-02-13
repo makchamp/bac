@@ -106,7 +106,6 @@ const Room = ({ username }) => {
     state: gameStates.Lobby,
     currentRound: 0,
   });
-  const [answers, setAnswers] = useState([]);
 
   const [gameSettings, setSettings] = useState({});
 
@@ -127,7 +126,7 @@ const Room = ({ username }) => {
   const [numSelectedCategories, setNumSelectedCategories] = useState(
     getNumTotalSelectedCategories()
   );
- 
+
   const setGameSettings = (settings) => {
     setSettings(settings);
     emitGameSettings(socket, { roomName, gameSettings: settings });
@@ -165,16 +164,17 @@ const Room = ({ username }) => {
 
     const setGameTimer = () => {
       socket.on(timerEvent, (seconds) => {
-        if (mounted) setTimer(secondsToMinutes(seconds));
+        if (mounted) {
+          if (seconds) {
+            setTimer(secondsToMinutes(seconds));
+          }
+        }
       });
     };
 
     const setGameStateListener = () => {
       socket.on(stateChangeEvent, (payload) => {
         if (mounted) {
-          if (payload.state !== gameStates.Round) {
-            setAnswers([]);
-          }
           if (
             payload.event === startEvent ||
             payload.event === nextCategoryEvent
@@ -236,7 +236,6 @@ const Room = ({ username }) => {
     };
   }, [
     socket,
-    answers,
     gameStates.Lobby,
     gameStates.Round,
     gameStates.PostRound,
@@ -246,8 +245,6 @@ const Room = ({ username }) => {
     setCurrentUser,
   ]);
 
-  
-
   useEffect(() => {
     setNumSelectedCategories(getNumTotalSelectedCategories());
   }, [categories, gameSettings, getNumTotalSelectedCategories]);
@@ -255,16 +252,18 @@ const Room = ({ username }) => {
   useEffect(() => {
     const onChangeNumSelectedCategories = () => {
       if (numSelectedCategories < gameSettings?.numOfCategories) {
-        setUiMessage(new UIMessage(true, `Please select ${gameSettings.numOfCategories - numSelectedCategories} more categories`))
-      }
-      else {
+        setUiMessage(
+          new UIMessage(
+            true,
+            `Please select ${gameSettings.numOfCategories - numSelectedCategories} more categories`
+          )
+        );
+      } else {
         setUiMessage(new UIMessage(false, ''));
-  
       }
-    }
+    };
     onChangeNumSelectedCategories();
   }, [numSelectedCategories, gameSettings]);
-
 
   const resetGameSettings = () => {
     emitResetGameSettings(socket, { roomName });
@@ -299,13 +298,7 @@ const Room = ({ username }) => {
   };
 
   const saveAnswer = (index, value) => {
-    const ans =
-      answers.length === 0
-        ? gameState.categories[gameState.currentRound]
-        : answers;
-    ans[index].answer = value;
     emitAnswer(socket, { roomName, index, value });
-    setAnswers(ans);
   };
 
   const vote = (answID, value) => {
@@ -374,7 +367,7 @@ const Room = ({ username }) => {
                 )}
 
                 <Button
-                  variant="contained"
+                  variant='contained'
                   size='large'
                   color='success'
                   onClick={() => setGameStart()}
@@ -385,7 +378,9 @@ const Room = ({ username }) => {
                     p: 2,
                   }}
                   startIcon={<PlayArrowIcon />}
-                  disabled={numSelectedCategories < gameSettings?.numOfCategories}>
+                  disabled={
+                    numSelectedCategories < gameSettings?.numOfCategories
+                  }>
                   <Typography>Start Game</Typography>
                 </Button>
               </Box>

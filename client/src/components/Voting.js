@@ -20,6 +20,7 @@ import { useUserStore } from '../services/state';
 import Tooltip from '@mui/material/Tooltip';
 
 const Voting = ({ gameState, vote, nextCategory }) => {
+  const { currentUser } = useUserStore();
   const currentCategory = gameState.currentCategory;
   const categories = gameState.categories[gameState.currentRound];
   const category = categories[currentCategory];
@@ -28,8 +29,8 @@ const Voting = ({ gameState, vote, nextCategory }) => {
   const answerRatings = useCallback(() => {
     return category.answers.map(({ answ, score, ...checked }) => checked);
   }, [category.answers]);
+
   const [votingButtons, setVotingButtons] = useState(answerRatings());
-  const { currentUser } = useUserStore();
 
   const voteButtonLabels = {
     upvote: { label: 'upvote' },
@@ -90,6 +91,10 @@ const Voting = ({ gameState, vote, nextCategory }) => {
     return category.answers.filter((answer) => answer.answ).length === 0;
   };
 
+  const isCurrentUser = (userID) => {
+    return userID === currentUser.userID;
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position='sticky'>
@@ -104,7 +109,9 @@ const Voting = ({ gameState, vote, nextCategory }) => {
             </Typography>
           </Box>
           <Tooltip
-            title={!currentUser?.isHost ? 'Waiting for host to continue...' : ''}>
+            title={
+              !currentUser?.isHost ? 'Waiting for host to continue...' : ''
+            }>
             <span>
               <Button
                 variant='outlined'
@@ -148,7 +155,9 @@ const Voting = ({ gameState, vote, nextCategory }) => {
               {category.answers.map(
                 (row, index) =>
                   row.answ && (
-                    <TableRow key={row.answID}>
+                    <TableRow
+                      hover={!isCurrentUser(row.userID)}
+                      key={row.answID}>
                       <TableCell
                         align='center'
                         sx={{
@@ -160,7 +169,15 @@ const Voting = ({ gameState, vote, nextCategory }) => {
                         sx={{
                           fontSize: '25px',
                         }}>
-                        {row.answ}
+                        {isCurrentUser(row.userID) ? (
+                          <Typography
+                            variant='h5'
+                            sx={{ color: 'text.secondary' }}>
+                            {row.answ}
+                          </Typography>
+                        ) : (
+                          <Typography variant='h5'>{row.answ}</Typography>
+                        )}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -181,7 +198,8 @@ const Voting = ({ gameState, vote, nextCategory }) => {
                                 row.answID,
                                 voteButtonLabels.upvote
                               )
-                            }>
+                            }
+                            disabled={isCurrentUser(row.userID)}>
                             {votingButtons[index].upChecked ? (
                               <ThumbUpAltIcon />
                             ) : (
@@ -196,7 +214,8 @@ const Voting = ({ gameState, vote, nextCategory }) => {
                                 row.answID,
                                 voteButtonLabels.downvote
                               )
-                            }>
+                            }
+                            disabled={isCurrentUser(row.userID)}>
                             {votingButtons[index].downChecked ? (
                               <ThumbDownAltIcon />
                             ) : (
@@ -205,6 +224,18 @@ const Voting = ({ gameState, vote, nextCategory }) => {
                           </IconButton>
                         </Box>
                       </TableCell>
+                      {isCurrentUser(row.userID) ? (
+                        <TableCell
+                          sx={{
+                            fontSize: '25px',
+                          }}>
+                          <Typography sx={{ color: 'text.secondary' }}>
+                            Your answer
+                          </Typography>
+                        </TableCell>
+                      ) : (
+                        <TableCell></TableCell>
+                      )}
                     </TableRow>
                   )
               )}

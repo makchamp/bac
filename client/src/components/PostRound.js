@@ -109,7 +109,11 @@ const PostRound = ({ gameState, users, nextRound }) => {
           <TableHead>
             <TableRow>
               {tableData[0].map((column, index) => (
-                <TableCell key={index}>
+                <TableCell
+                  sx={{
+                    fontSize: '25px',
+                  }}
+                  key={index}>
                   <b>{column}</b>
                 </TableCell>
               ))}
@@ -117,9 +121,15 @@ const PostRound = ({ gameState, users, nextRound }) => {
           </TableHead>
           <TableBody>
             {tableData.slice(1).map((row, rowIndex) => (
-              <TableRow key={rowIndex}>
+              <TableRow hover key={rowIndex}>
                 {row.map((cell, cellIndex) => (
-                  <TableCell key={cellIndex}>{cell}</TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: '22px',
+                    }}
+                    key={cellIndex}>
+                    {cell}
+                  </TableCell>
                 ))}
               </TableRow>
             ))}
