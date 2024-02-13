@@ -33,6 +33,7 @@ class Launch(ScriptCommand):
                 ssh_connect(HOST, 'main')
                 self.run_deployment_playbook()
                 ssh_disconnect()
+            self.check_arg(arg)
 
     def run_application_locally(self, session_secret: str) -> None:
         script = [

@@ -30,6 +30,7 @@ class MachineStatus(ScriptCommand):
                 self.validate_virtual_machine('main')
             if arg in ("cloud_vm", "all"):
                 self.validate_deployment_server()
+            self.check_arg(arg)
 
     def validate_virtual_machine(self, machine_name: str) -> None:
         vagrant_file = './deployment/'

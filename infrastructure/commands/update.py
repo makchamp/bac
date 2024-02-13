@@ -28,6 +28,7 @@ class Update(ScriptCommand):
                 ssh_connect(HOST, 'main')
                 self.vm_update_docker()
                 ssh_disconnect()
+            self.check_arg(arg)
 
     def vm_update_codebase(self, branch_name: str) -> None:
         script = [

@@ -32,6 +32,7 @@ class Environment(ScriptCommand):
                 session_secret = input("Please Enter the session secret: ")
                 # `openssl rand -hex 32` or go to https://generate-secret.now.sh/32
                 self.env_file_setup(session_secret, domain, client_port, host_port, redis_port)
+            self.check_arg(arg)
 
     def set_env_file(self, path: str, env_variables: dict[str, object]) -> None:
         env_file = dotenv.find_dotenv(path)

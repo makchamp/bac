@@ -10,3 +10,8 @@ class ScriptCommand(metaclass=ABCMeta):
     @abstractmethod
     def command(self, *args: str):
         pass
+
+    def check_arg(self, arg: str):
+        if arg not in self.choices:
+            print(f"The following argument is not supported: {arg}\
+                  \nPlease Select from the following {self.choices}")
