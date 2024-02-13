@@ -38,7 +38,7 @@ class Launch(ScriptCommand):
         script = [
             'cd /home/vagrant/bac/infrastructure',
             'git pull origin',
-            'python3 launchScript.py environment setup_env',
+            'python3 launch_script.py environment setup_env',
             '',
             '',
             '',
