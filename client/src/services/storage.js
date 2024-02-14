@@ -1,3 +1,4 @@
+// Manage local storage
 
 const keys = {
   gameSettings: 'gameSettings',

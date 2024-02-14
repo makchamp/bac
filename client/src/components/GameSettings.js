@@ -4,7 +4,6 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
 import Categories from './Categories';
 import Letters from './Letters';
@@ -16,13 +15,13 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { useState } from 'react';
-
 import { green, teal, purple, indigo } from '@mui/material/colors';
 import TimerIcon from '@mui/icons-material/Timer';
 import CategoryIcon from '@mui/icons-material/Category';
 import SpellcheckIcon from '@mui/icons-material/Spellcheck';
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
+import { useUserStore } from '../services/state';
+import { useState } from 'react';
 
 const panels = {
   general: 'generalPanel',
@@ -34,10 +33,12 @@ const GameSettings = ({
   setGameSettings,
   categories,
   setCategories,
-  resetGameSettings,
+  resetGameSettings
 }) => {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [panelExpanded, setPanelExpanded] = useState(false);
+  const { currentUser } = useUserStore();
+
   const handlePanelExpansion = (panel) => (event, isExpanded) => {
     setPanelExpanded(isExpanded ? panel : false);
   };
@@ -135,88 +136,104 @@ const GameSettings = ({
         my: 8,
         mx: 4,
       }}>
-      <Stack direction='column'>
-        <Typography variant='h3'>Game Settings</Typography>
-
-        <Button
-          variant='outlined'
-          onClick={handleClickOpen}
-          sx={{ mb: 1, width: '200px' }}>
-          Default Settings
-        </Button>
-        <Dialog
-          open={resetDialogOpen}
-          onClose={handleClose}
-          aria-labelledby='alert-dialog-title'
-          aria-describedby='alert-dialog-description'>
-          <DialogTitle id='alert-dialog-title'>
-            Reset Game Settings ?
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id='alert-dialog-description'>
-              Revert game settings back to their default values ?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} autoFocus>
-              No
-            </Button>
+      <Typography variant='h3'>Game Settings</Typography>
+      {currentUser?.isHost ? (
+        <Box>
+          <Box>
             <Button
-              onClick={() => {
-                resetGameSettings();
-                handleClose();
-              }}
-              autoFocus>
-              Yes
+              variant='outlined'
+              onClick={handleClickOpen}
+              sx={{ mb: 1, width: '200px' }}>
+              Default Settings
             </Button>
-          </DialogActions>
-        </Dialog>
-      </Stack>
-      <Accordion
-        expanded={panelExpanded === panels.general}
-        onChange={handlePanelExpansion(panels.general)}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography sx={{ width: '45%', flexShrink: 0 }}>Rounds</Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            Configure Number and Duration
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <SliderInput {...roundParams}></SliderInput>
-          <SliderInput {...timeParams}></SliderInput>
-        </AccordionDetails>
-      </Accordion>
+            <Dialog
+              open={resetDialogOpen}
+              onClose={handleClose}
+              aria-labelledby='alert-dialog-title'
+              aria-describedby='alert-dialog-description'>
+              <DialogTitle id='alert-dialog-title'>
+                Reset Game Settings ?
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id='alert-dialog-description'>
+                  Revert game settings back to their default values ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose} autoFocus>
+                  Cancel
+                </Button>
+                <Button
+                  color='error'
+                  onClick={() => {
+                    resetGameSettings();
+                    handleClose();
+                  }}
+                  autoFocus>
+                  Reset
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
 
-      <Accordion
-        expanded={panelExpanded === panels.categories}
-        onChange={handlePanelExpansion(panels.categories)}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography sx={{ width: '45%', flexShrink: 0 }}>
-            Categories
-          </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            Select or Add Categories
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Categories {...categoryParams}></Categories>
-          <SliderInput {...numCategoryParams}></SliderInput>
-        </AccordionDetails>
-      </Accordion>
+          <Accordion
+            expanded={panelExpanded === panels.general}
+            onChange={handlePanelExpansion(panels.general)}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={{ width: '45%', flexShrink: 0 }}>
+                Rounds
+              </Typography>
+              <Typography sx={{ color: 'text.secondary' }}>
+                Configure Number and Duration
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <SliderInput {...roundParams}></SliderInput>
+              <SliderInput {...timeParams}></SliderInput>
+            </AccordionDetails>
+          </Accordion>
 
-      <Accordion
-        expanded={panelExpanded === panels.letters}
-        onChange={handlePanelExpansion(panels.letters)}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography sx={{ width: '45%', flexShrink: 0 }}>Letters</Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            Select Letters
+          <Accordion
+            expanded={panelExpanded === panels.categories}
+            onChange={handlePanelExpansion(panels.categories)}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={{ width: '45%', flexShrink: 0 }}>
+                Categories
+              </Typography>
+              <Typography sx={{ color: 'text.secondary' }}>
+                Select or Add Categories
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Categories {...categoryParams}></Categories>
+              <SliderInput {...numCategoryParams}></SliderInput>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion
+            expanded={panelExpanded === panels.letters}
+            onChange={handlePanelExpansion(panels.letters)}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={{ width: '45%', flexShrink: 0 }}>
+                Letters
+              </Typography>
+              <Typography sx={{ color: 'text.secondary' }}>
+                Select Letters
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Letters {...letterParams}></Letters>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
+      ) : (
+        <Box>
+          <Typography sx={{ fontSize: '20px', color: 'text.secondary' }}>
+            Waiting for host to start game...
           </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Letters {...letterParams}></Letters>
-        </AccordionDetails>
-      </Accordion>
+        </Box>
+      )}
+
       <Grid
         container
         direction='row'

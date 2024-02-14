@@ -9,13 +9,15 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import { useEffect, useState } from 'react';
+import { useUserStore } from '../services/state';
 
 const PostRound = ({ gameState, users, nextRound }) => {
   const handleNextRound = () => {
     nextRound();
   };
-
+  const { currentUser } = useUserStore();
   const [tableData, setTableData] = useState([[]]);
 
   const sortTableScores = (td) => {
@@ -84,13 +86,21 @@ const PostRound = ({ gameState, users, nextRound }) => {
                 : 'Final Results'}
             </Typography>
           </Box>
-          <Button
-            variant='outlined'
-            color={isFinalRound() ? 'error' : 'warning'}
-            sx={{ fontSize: '30px' }}
-            onClick={handleNextRound}>
-            {isFinalRound() ? 'End Game' : 'Next Round'}
-          </Button>
+          <Tooltip
+            title={
+              !currentUser?.isHost ? 'Waiting for host to continue...' : ''
+            }>
+            <span>
+              <Button
+                variant='outlined'
+                color={isFinalRound() ? 'error' : 'warning'}
+                sx={{ fontSize: '30px' }}
+                onClick={handleNextRound}
+                disabled={!currentUser?.isHost}>
+                {isFinalRound() ? 'End Game' : 'Next Round'}
+              </Button>
+            </span>
+          </Tooltip>
         </Toolbar>
       </AppBar>
 
@@ -99,7 +109,11 @@ const PostRound = ({ gameState, users, nextRound }) => {
           <TableHead>
             <TableRow>
               {tableData[0].map((column, index) => (
-                <TableCell key={index}>
+                <TableCell
+                  sx={{
+                    fontSize: '25px',
+                  }}
+                  key={index}>
                   <b>{column}</b>
                 </TableCell>
               ))}
@@ -107,9 +121,15 @@ const PostRound = ({ gameState, users, nextRound }) => {
           </TableHead>
           <TableBody>
             {tableData.slice(1).map((row, rowIndex) => (
-              <TableRow key={rowIndex}>
+              <TableRow hover key={rowIndex}>
                 {row.map((cell, cellIndex) => (
-                  <TableCell key={cellIndex}>{cell}</TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: '22px',
+                    }}
+                    key={cellIndex}>
+                    {cell}
+                  </TableCell>
                 ))}
               </TableRow>
             ))}

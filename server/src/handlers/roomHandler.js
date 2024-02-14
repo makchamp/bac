@@ -1,8 +1,9 @@
 import { RoomState } from '../models/RoomState.enum';
 import { StoreTimer } from '../models/StoreTimer';
+import { GameSettings } from '../models/GameSettings';
 
-const MAX_ROOM_SIZE = 16;
-const TIME_TO_DELETE_ROOM = 60 * 5; // seconds
+const MAX_ROOM_SIZE = 12;
+const TIME_TO_DELETE_EMPTY_ROOM = 60 * 5; // seconds
 
 export default function registerRoomHandlers(io, socket, store) {
   const { sessionID, session } = socket.request;
@@ -19,21 +20,20 @@ export default function registerRoomHandlers(io, socket, store) {
     if (roomName) {
       deleteRoomTimer.clearIntervalTimer(roomName);
       try {
-        socket.join(roomName);
-        console.log(`User \'${sessionID}\' joined room \'${session.room}\'`);
         store.client.hget(roomName, 'users', (err, roomUsers) => {
           let users;
           if (roomUsers) {
             users = JSON.parse(roomUsers);
             if (
-              Object.keys(users).length === MAX_ROOM_SIZE &&
+              Object.keys(users).length >= MAX_ROOM_SIZE &&
               !users[sessionID]
             ) {
-              return notifyUser(
+              return emitToUser(
                 'user:JoinRoomError:RoomFull',
                 `Reached max number of users in room '${roomName}'`
               );
             }
+
             users[sessionID] = {
               userName,
               socketID,
@@ -51,14 +51,26 @@ export default function registerRoomHandlers(io, socket, store) {
               'gameState',
               JSON.stringify({ state: RoomState.Lobby })
             );
+            store.client.hset(
+              roomName,
+              'gameSettings',
+              JSON.stringify(new GameSettings())
+            );
           }
+          socket.join(roomName);
           store.client.hset(roomName, 'users', JSON.stringify(users));
           store.get(sessionID, (error, session) => {
             if (session) {
               store.set(sessionID, { ...session, room: roomName });
             }
           });
+
+          emitUserJoin(roomName, {
+            userID: sessionID,
+            roomName,
+            ...users[sessionID]});
           notifyUserSetChanged(roomName, users);
+          console.log(`User \'${sessionID}\' joined room \'${session.room}\'`);
         });
       } catch (err) {
         console.log(
@@ -73,10 +85,23 @@ export default function registerRoomHandlers(io, socket, store) {
     }
   };
 
+  const emitUserJoin = (roomName, userInfo) => {
+    store.client.hget(roomName, 'gameSettings', (err, gameSettings) => {
+      let settings = {};
+      if (gameSettings) {
+        settings = JSON.parse(gameSettings);
+      }
+      emitToUser('user:Join', {
+        userInfo,
+        gameSettings: settings
+      });
+    });
+  };
+
   const setDeleteRoomTimer = (roomName) => {
     deleteRoomTimer.setIntervalTimer(
       roomName,
-      TIME_TO_DELETE_ROOM,
+      TIME_TO_DELETE_EMPTY_ROOM,
       (roomName) => {
         store.client.hget(roomName, 'users', (err, roomUsers) => {
           // Make sure theres nobody in the room before deleting it
@@ -88,8 +113,8 @@ export default function registerRoomHandlers(io, socket, store) {
     );
   };
 
-  const notifyUser = (event, msg) => {
-    socket.emit(event, msg);
+  const emitToUser = (event, data) => {
+    socket.emit(event, data);
   };
 
   const notifyUserSetChanged = (roomName, users) => {

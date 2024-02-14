@@ -29,7 +29,7 @@ const Row = memo(({ data, index, style }) => {
 
   return (
     <ListItem style={style} key={index} component="div" disablePadding >
-      <ListItemButton role={undefined} onClick={() => toggleItemActive(index)} dense>
+      <ListItemButton onClick={() => toggleItemActive(index)} dense>
         <ListItemIcon>
           <Checkbox
             checked={item.isActive}
@@ -84,7 +84,7 @@ class Categories extends PureComponent {
         <FormControlLabel
           control={
             <Checkbox
-            checked={this.props.toggleAll}
+            checked={!!this.props.toggleAll}
             onClick={this.toggleAllItems}
           />
           }

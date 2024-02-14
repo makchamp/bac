@@ -1,6 +1,7 @@
 const { nanoid } = require('nanoid/non-secure');
 import { RoomState } from '../models/RoomState.enum';
 import { StoreTimer } from '../models/StoreTimer';
+import { GameSettings } from '../models/GameSettings';
 
 export default function registerGameHandlers(io, socket, store) {
   const { sessionID, session } = socket.request; // sessionID === userID
@@ -14,46 +15,56 @@ export default function registerGameHandlers(io, socket, store) {
   );
 
   const startGame = (payload) => {
-    const { userName, roomName, gameSettings, categories } = payload;
-    const {
-      lengthOfRound,
-      numOfRounds,
-      numOfCategories,
-      letters,
-      letterRotation,
-      multiScoring,
-    } = gameSettings;
+    const { roomName, categories } = payload;
+    store.client.hget(roomName, 'gameSettings', (err, gameSettings) => {
+      gameSettings = gameSettings
+        ? JSON.parse(gameSettings)
+        : new GameSettings();
+      const {
+        lengthOfRound,
+        numOfRounds,
+        numOfCategories,
+        letters,
+        letterRotation,
+        multiScoring,
+      } = gameSettings;
 
-    store.client.hset(roomName, 'gameSettings', JSON.stringify(gameSettings));
-    const gameState = {
-      state: RoomState.Round,
-      currentRound: 0,
-      numOfRounds,
-      lengthOfRound,
-      categories: [],
-      letterRotation,
-      multiScoring,
-      players: {},
-      answers: {},
-      event: 'game:start',
-    };
+      const gameState = {
+        state: RoomState.Round,
+        currentRound: 0,
+        numOfRounds,
+        lengthOfRound,
+        categories: [],
+        letterRotation,
+        multiScoring,
+        players: {},
+        answers: {},
+        event: 'game:start',
+      };
 
-    store.client.hget(roomName, 'users', (err, roomUsers) => {
-      if (roomUsers) {
-        // Setup players, categories and answers/scores table
-        gameState.players = JSON.parse(roomUsers);
-        gameState.categories = selectCategories(
-          categories,
-          numOfCategories,
-          letters,
-          letterRotation,
-          numOfRounds
-        );
-        initAnswersTable(gameState);
-        setGameState(roomName, gameState);
-        emitGameState(roomName, gameState);
-        setRoundTimer(roomName, lengthOfRound);
-      }
+      store.client.hget(roomName, 'users', (err, roomUsers) => {
+        try {
+          if (roomUsers) {
+            // Setup players, categories and answers/scores table
+            gameState.players = JSON.parse(roomUsers);
+            gameState.categories = selectCategories(
+              categories,
+              numOfCategories,
+              letters,
+              letterRotation,
+              numOfRounds
+            );
+            initAnswersTable(gameState);
+            setGameState(roomName, gameState);
+            emitGameState(roomName, gameState);
+            setRoundTimer(roomName, lengthOfRound);
+          }
+        } catch (error) {
+          console.trace(
+            `Failed to start game in room: \'${roomName}\'- ${error}:`
+          );
+        }
+      });
     });
   };
 
@@ -111,9 +122,13 @@ export default function registerGameHandlers(io, socket, store) {
       letters[letter].isActive ? [letter] : []
     );
 
-    let selectedLetter = selectRandomLetter(activeLetters);
-    const res = new Array(numOfRounds);
-    for (let i = 0; i < res.length; i++) {
+    if (categories.customCategories) {
+      activeCategories.push(...categories.customCategories);
+    }
+
+    const rounds = new Array(numOfRounds);
+    for (let i = 0; i < rounds.length; i++) {
+      let selectedLetter = selectRandomLetter(activeLetters);
       const selectedCategories = selectRandomCategories(
         activeCategories,
         numOfCategories
@@ -128,9 +143,9 @@ export default function registerGameHandlers(io, socket, store) {
           category: selectedCategories[j],
         };
       }
-      res[i] = ctgs;
+      rounds[i] = ctgs;
     }
-    return res;
+    return rounds;
   };
 
   const selectRandomCategories = (arr, n) => {
@@ -160,7 +175,7 @@ export default function registerGameHandlers(io, socket, store) {
         answers[sessionID].answers[currentRound][index].answ = value;
         setGameState(roomName, state);
       } catch (error) {
-        console.error(error);
+        console.trace(error);
       }
     });
   };
@@ -170,13 +185,12 @@ export default function registerGameHandlers(io, socket, store) {
     const users = Object.keys(answers);
     categories[currentRound].forEach((category, index) => {
       const categoryAns = [];
-      users.forEach((user) => {
-        const ans = answers[user].answers[currentRound][index];
+      users.forEach((userID) => {
+        const ans = { userID, ...answers[userID].answers[currentRound][index] };
         categoryAns.push(ans);
       });
       category.answers = categoryAns;
     });
-    emitGameState(roomName, state);
     setGameState(roomName, state);
   };
 
@@ -302,9 +316,29 @@ export default function registerGameHandlers(io, socket, store) {
     });
   };
 
+  const handleGameSettings = (payload) => {
+    // brodcast game settings
+    const { roomName, gameSettings } = payload;
+    if (roomName && gameSettings) {
+      store.client.hset(roomName, 'gameSettings', JSON.stringify(gameSettings));
+      io.to(roomName).emit('game:settings', gameSettings);
+    }
+  };
+
+  const handleResetGameSettings = (payload) => {
+    const { roomName } = payload;
+    if (roomName) {
+      const settings = new GameSettings();
+      store.client.hset(roomName, 'gameSettings', JSON.stringify(settings));
+      io.to(roomName).emit('game:settings', settings);
+    }
+  };
+
   socket.on('game:start', startGame);
   socket.on('game:answer', handleAnswer);
   socket.on('game:nextCategory', nextCategory);
   socket.on('game:nextRound', nextRound);
   socket.on('game:vote', hanldeVote);
+  socket.on('game:settings', handleGameSettings);
+  socket.on('game:resetSettings', handleResetGameSettings);
 }

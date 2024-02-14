@@ -3,15 +3,14 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListSubheader from '@mui/material/ListSubheader';
-import AddModeratorIcon from '@mui/icons-material/AddModerator';
-import PersonIcon from '@mui/icons-material/Person';
+import { useUserStore } from '../services/state';
+import PlayerListItem from './PlayerListItem';
 import Tooltip from '@mui/material/Tooltip';
 
 const PlayerList = ({ users, roomName }) => {
+  const { currentUser } = useUserStore();
+
   return (
     <Grid
       item
@@ -37,31 +36,21 @@ const PlayerList = ({ users, roomName }) => {
             bgcolor: 'background.paper',
           }}
           subheader={<ListSubheader>Players</ListSubheader>}>
-          {users.map((user, index) => {
-            return user.inRoom ? (
-              <ListItem
-                key={index}
-                secondaryAction={
-                  user.isHost && (
-                    <>
-                      <Tooltip title='Room Admin'>
-                        <AddModeratorIcon />
-                      </Tooltip>
-                    </>
-                  )
-                }>
-                <ListItemIcon>
-                  {' '}
-                  <PersonIcon />{' '}
-                </ListItemIcon>
-                <ListItemText id={index}>
-                  <Typography variant='h5' key={index}>
-                    {user.userName}
-                  </Typography>
-                </ListItemText>
-              </ListItem>
-            ) : (
-              ''
+          {currentUser.socketID && (
+            <Tooltip title='You' placement="left">
+              <Paper variant='outlined' elevation={0}>
+                <PlayerListItem
+                  key={currentUser.userID}
+                  user={currentUser}></PlayerListItem>
+              </Paper>
+            </Tooltip>
+          )}
+          {users.map((u, index) => {
+            return (
+              u.inRoom &&
+              u.userID !== currentUser.userID && (
+                <PlayerListItem key={index} user={u}></PlayerListItem>
+              )
             );
           })}
         </List>
