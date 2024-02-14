@@ -1,24 +1,35 @@
-import colorama
-import time
-from common import *
+from common import HOST, ssh_connect, ssh_commands, ssh_disconnect
 from script_command import ScriptCommand
 
 class Launch(ScriptCommand):
 
     def __init__(self):
+        super().__init__()
         self.name="launch"
         self.help_message="used to launch the application on the specified machine"
-        self.choices=["cloud_vm", "local_vm", "all"]
-        self.argument = {"dest": "selection", "nargs": "+", "type": str, "metavar": "machine/s", "help": "cloud_vm|local_vm|all"}
+
+        self.choices=[
+            "cloud_vm",
+            "local_vm",
+            "all"
+        ]
+
+        self.argument = {
+            "dest": "selection",
+            "nargs": "+",
+            "type": str,
+            "metavar": "machine/s",
+            "help": "cloud_vm|local_vm|all"
+        }
 
     def command(self, *args: str) -> None:
         for arg in args:
-            if arg == "local_vm" or arg == "all":
+            if arg in ("local_vm", "all"):
                 ssh_connect(HOST, 'main')
                 session_secret = input("Please Enter the session secret: ")
                 self.run_application_locally(session_secret)
                 ssh_disconnect()
-            if arg == "cloud_vm" or arg == "all":
+            if arg in ("cloud_vm", "all"):
                 ssh_connect(HOST, 'main')
                 self.run_deployment_playbook()
                 ssh_disconnect()

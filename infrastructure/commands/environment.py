@@ -1,13 +1,15 @@
-import dotenv
 import shutil
+import dotenv
 from script_command import ScriptCommand
 
 class Environment(ScriptCommand):
 
     def __init__(self):
+        super().__init__()
         self.name = "environment"
         self.help_message = "used to initialize/modify any environment files"
         self.choices = ["setup_env"]
+
         self.argument = {
             "dest": "selection",
             "nargs": "+",
@@ -27,11 +29,11 @@ class Environment(ScriptCommand):
                 redis_port = int(input("Please Enter a Port for the Redis: ") or -1)
                 redis_port = redis_port if redis_port != -1 else 6379
                 domain = input("Please Enter a Domain: ") or "localhost"
-                session_secret = input("Please Enter the session secret: ") # `openssl rand -hex 32` or go to https://generate-secret.now.sh/32
+                session_secret = input("Please Enter the session secret: ")
+                # `openssl rand -hex 32` or go to https://generate-secret.now.sh/32
                 self.env_file_setup(session_secret, domain, client_port, host_port, redis_port)
 
     def set_env_file(self, path: str, env_variables: dict[str, object]) -> None:
-        
         env_file = dotenv.find_dotenv(path)
         dotenv.load_dotenv(env_file)
 
@@ -40,7 +42,7 @@ class Environment(ScriptCommand):
 
     def env_file_setup(self, session_secret: str, domain, client_port: int,
                         host_port: int, redis_port: int) -> None:
-        
+
         shutil.copyfile('../client/.env.example', '../client/.env')
 
         client_variables = {

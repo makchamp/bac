@@ -57,3 +57,20 @@ jobs:
       working-directory: ./server
       run:
         npm ci
+  
+  infrastructure:
+    name: Infrastructure
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup GitHub Actions
+      uses: actions/checkout@v4
+    
+    - name: Setup PyLint
+      uses: cclauss/GitHub-Action-for-pylint@0.7.0
+
+    - name: Lint Infrastructure
+      id: build
+      working-directory: ./infrastructure
+      run:
+        pip install -r requirements.txt; pylint $(git ls-files '*.py') --fail-under=8.5
