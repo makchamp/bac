@@ -9,7 +9,8 @@ class ApplicationStatus(ScriptCommand):
 
         self.choices = [
             "cloud_vm",
-            "local_vm", "all"
+            "local_vm",
+            "all"
         ]
 
         self.argument = {

@@ -42,3 +42,4 @@ class Initialize(ScriptCommand):
                 self.initialize_virtual_machine("main")
             if arg in ("cloud_vm", "all"):
                 self.initialize_deployment_server()
+            self.check_arg(arg)

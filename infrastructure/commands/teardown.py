@@ -30,6 +30,7 @@ class Teardown(ScriptCommand):
                 self.destroy_virtual_machine('main')
             if arg in ("cloud_vm", "all"):
                 self.destroy_deployment_server()
+            self.check_arg(arg)
 
     def destroy_virtual_machine(self, machine_name: str) -> None:
         vagrant_file = './deployment/'

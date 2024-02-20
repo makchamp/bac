@@ -1,5 +1,4 @@
-import colorama
-from common import HOST, ssh_connect, fix_ansi, ssh_disconnect, ssh
+from common import HOST, ssh_connect, ssh_disconnect, ssh_commands
 from script_command import ScriptCommand
 
 class Update(ScriptCommand):
@@ -9,7 +8,7 @@ class Update(ScriptCommand):
         self.name="update"
         self.help_message="used to pull and update the specified machine with the latest changes"
 
-        self.choices=["vm_branch, vm_docker"]
+        self.choices=["vm_branch", "vm_docker"]
 
         self.argument = {
             "dest": "selection",
@@ -29,39 +28,21 @@ class Update(ScriptCommand):
                 ssh_connect(HOST, 'main')
                 self.vm_update_docker()
                 ssh_disconnect()
+            self.check_arg(arg)
 
     def vm_update_codebase(self, branch_name: str) -> None:
-        channel = ssh.invoke_shell()
-        stdin = channel.makefile('wb')
-        stdout = channel.makefile('rb')
-
-        stdin.write('cd /home/vagrant/bac' + '\n')
-        stdin.write('git checkout ' + branch_name + '\n')
-        stdin.write('git pull origin' + '\n')
-        stdin.write('exit' + '\n')
-        stdin.flush()
-
-        colorama.init(convert=True, autoreset=True)
-        lines = stdout.readlines()
-        for line in lines:
-            print(fix_ansi(str(line)))
-
-        channel.close()
+        script = [
+            'cd /home/vagrant/bac',
+            f"git checkout {branch_name}",
+            'git pull origin',
+            'exit',
+        ] #'exit'
+        ssh_commands(script, 3.0)
 
     def vm_update_docker(self) -> None:
-        channel = ssh.invoke_shell()
-        stdin = channel.makefile('wb')
-        stdout = channel.makefile('rb')
-
-        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml down -v --rmi all' + '\n')
-        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml build --no-cache' + '\n')
-        stdin.write('sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml up --pull always --force-recreate' + '\n')
-
-        stdin.flush()
-
-        colorama.init(convert=True, autoreset=True)
-        lines = stdout.readlines()
-        for line in lines:
-            print(fix_ansi(str(line)))
-
-        channel.close()
+        script = [
+            'sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml down -v --rmi all',
+            'sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml build --no-cache',
+            'sudo docker compose -f /home/vagrant/bac/infrastructure/deployment/docker-compose.yml up --pull always --force-recreate',
+        ] #'exit'
+        ssh_commands(script, 300.0)
